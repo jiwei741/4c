@@ -1,0 +1,42 @@
+{
+  "release": "EDGAR_2025_GHG",
+  "substance": "CO2",
+  "years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "num_nodes": 309,
+  "num_rows": 6180,
+  "unit": "megatonnes",
+  "output_path": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\edgar_features.csv",
+  "total_stats": {
+    "min": 0.0,
+    "max": 24.823203141022997,
+    "mean": 0.8638992232918672
+  },
+  "sector_stats": {
+    "ENE": {
+      "min": 0.0,
+      "max": 11.9529,
+      "mean": 0.34827760776699024
+    },
+    "IND": {
+      "min": 0.0,
+      "max": 13.8931,
+      "mean": 0.4847578735347316
+    },
+    "PRO_FFF": {
+      "min": 0.0,
+      "max": 3.397330045700073e-07,
+      "mean": 5.844506814798587e-08
+    },
+    "CHE": {
+      "min": 0.0,
+      "max": 0.468521,
+      "mean": 0.030863683545077118
+    }
+  }
+}

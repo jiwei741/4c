@@ -1,0 +1,20 @@
+topics:
+  - name: sentinel2.asset.arrived
+    value_schema: sentinel2_asset_v1
+    producer: data_ingestion
+    consumer: segmentation
+  - name: segmentation.features.updated
+    value_schema: land_cover_feature_v1
+    producer: segmentation
+    consumer: streaming
+  - name: inference.refresh.requested
+    value_schema: inference_refresh_v1
+    producer: backend
+    consumer: inference
+sinks:
+  - sink_name: postgis_raw_assets
+    target_table: raw_assets
+    write_mode: upsert
+  - sink_name: postgis_features
+    target_table: sentinel2_catalog
+    write_mode: append

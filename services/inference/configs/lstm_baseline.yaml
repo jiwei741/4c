@@ -1,0 +1,25 @@
+experiment_name: lstm_baseline_mock
+
+model:
+  name: lstm_baseline
+  hidden_dim: 64
+  lstm_layers: 2
+  dropout: 0.1
+
+data:
+  input_window: 12
+  horizon: 1
+  target_dim: 1
+
+training:
+  batch_size: 8
+  epochs: 20
+  learning_rate: 0.001
+  weight_decay: 0.0
+  train_ratio: 0.7
+  val_ratio: 0.15
+  seed: 42
+  device: auto
+
+output:
+  dir: outputs/lstm_baseline_mock

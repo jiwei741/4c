@@ -1,0 +1,12 @@
+{
+  "study_area": "nanjing",
+  "execution_mode": "remote-gpu",
+  "server_workdir": "/workspace/spatio-eco",
+  "raw_download_root": "data/raw/sentinel2/downloads",
+  "segmentation_root": "data/processed/segmentation",
+  "feature_output_csv": "data/processed/features/nanjing/quarterly/sentinel2_features_from_sam2.csv",
+  "notes": [
+    "Use this layout on the GPU server.",
+    "Mirror Sentinel-2 SAFE folders before running the real SAM-2 inference service."
+  ]
+}

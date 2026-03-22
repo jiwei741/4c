@@ -1,0 +1,26 @@
+experiment_name: stgnn_gcn_lstm_mock
+
+model:
+  name: stgnn_gcn_lstm
+  graph_hidden_dim: 32
+  temporal_hidden_dim: 64
+  lstm_layers: 1
+  dropout: 0.1
+
+data:
+  input_window: 12
+  horizon: 1
+  target_dim: 1
+
+training:
+  batch_size: 8
+  epochs: 25
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  train_ratio: 0.7
+  val_ratio: 0.15
+  seed: 42
+  device: auto
+
+output:
+  dir: outputs/stgnn_gcn_lstm_mock

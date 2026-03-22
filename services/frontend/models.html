@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spatio-Eco Platform</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/cesium@1.118.2/Build/Cesium/Widgets/widgets.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="models">
+    <main class="page-shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="hero-topline">
+            <p class="eyebrow" data-i18n="brandEyebrow">Spatio-Eco Platform</p>
+            <div class="lang-switch" aria-label="Language switch">
+              <button class="lang-button is-active" id="lang-zh" type="button">中文</button>
+              <button class="lang-button" id="lang-en" type="button">EN</button>
+            </div>
+          </div>
+          <h1 data-i18n="modelsHeroTitle">Model evaluation and forecast laboratory</h1>
+          <p class="hero-text" data-i18n="modelsHeroDescription">
+            Focus on quarterly model metrics, multi-step forecasts, hotspot ranking,
+            and the current gap between the graph model and baseline.
+          </p>
+          <div class="hero-meta" id="hero-meta"></div>
+        </div>
+        <div class="hero-panel">
+          <p class="panel-label" data-i18n="platformPhaseLabel">Platform Phase</p>
+          <p class="panel-value" id="project-phase">Loading</p>
+          <div class="hero-stack" id="hero-stack"></div>
+        </div>
+      </section>
+
+      <nav class="page-nav" aria-label="Platform navigation">
+        <a class="nav-link" href="./index.html" data-page-link="overview" data-i18n="navOverview">Overview</a>
+        <a class="nav-link is-active" href="./models.html" data-page-link="models" data-i18n="navModels">Models</a>
+        <a class="nav-link" href="./operations.html" data-page-link="operations" data-i18n="navOperations">Operations</a>
+        <a class="nav-link" href="./research.html" data-page-link="research" data-i18n="navResearch">Research</a>
+      </nav>
+
+      <section class="metrics-strip" id="metrics-strip"></section>
+
+      <section class="grid-two">
+        <article class="section-card">
+          <div class="section-head">
+            <div>
+              <p class="section-tag" data-i18n="modelRegistryTag">Model Registry</p>
+              <h2 data-i18n="modelMetricsTitle">Model metrics</h2>
+            </div>
+          </div>
+          <div class="model-grid" id="model-grid"></div>
+        </article>
+        <article class="section-card">
+          <div class="section-head">
+            <div>
+              <p class="section-tag" data-i18n="predictionSummaryTag">Prediction Summary</p>
+              <h2 data-i18n="forecastBreakdownTitle">Forecast breakdown</h2>
+            </div>
+          </div>
+          <div class="stack-list" id="prediction-grid"></div>
+        </article>
+      </section>
+
+      <section class="grid-two">
+        <article class="section-card">
+          <div class="section-head">
+            <div>
+              <p class="section-tag" data-i18n="hotspotWatchTag">Hotspot Watch</p>
+              <h2 data-i18n="businessHotspotsTitle">Business hotspots</h2>
+            </div>
+          </div>
+          <div class="stack-list" id="hotspot-list"></div>
+        </article>
+        <article class="section-card">
+          <div class="section-head">
+            <div>
+              <p class="section-tag" data-i18n="managementTag">Management</p>
+              <h2 data-i18n="platformOverviewTitle">Platform overview</h2>
+            </div>
+          </div>
+          <div class="management-grid" id="management-grid"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/cesium@1.118.2/Build/Cesium/Cesium.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

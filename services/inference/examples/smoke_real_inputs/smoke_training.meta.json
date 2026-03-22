@@ -1,0 +1,29 @@
+{
+  "study_area_name": "smoke-nanjing",
+  "timestamps": [
+    "2025-01",
+    "2025-02",
+    "2025-03",
+    "2025-04"
+  ],
+  "node_ids": [
+    "grid_00",
+    "grid_01",
+    "grid_02"
+  ],
+  "feature_names": [
+    "vegetation_area_ratio",
+    "ndvi_mean",
+    "land_surface_temperature",
+    "u10_wind",
+    "v10_wind",
+    "precipitation",
+    "edgar_emission"
+  ],
+  "target_name": "net_carbon_flux",
+  "source_names": [
+    "sentinel2",
+    "era5",
+    "edgar"
+  ]
+}

@@ -1,0 +1,6 @@
+README.md
+pyproject.toml
+spatio_eco_frontend.egg-info/PKG-INFO
+spatio_eco_frontend.egg-info/SOURCES.txt
+spatio_eco_frontend.egg-info/dependency_links.txt
+spatio_eco_frontend.egg-info/top_level.txt

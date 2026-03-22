@@ -1,0 +1,20 @@
+{
+  "best_val_loss": 0.8925199608008066,
+  "test_metrics": {
+    "mae": 0.1277654841542244,
+    "rmse": 0.14549842476844788
+  },
+  "normalization": {
+    "target": {
+      "mean": [
+        0.21451374888420105
+      ],
+      "std": [
+        0.13881726562976837
+      ]
+    }
+  },
+  "target_transform": {
+    "name": "identity"
+  }
+}

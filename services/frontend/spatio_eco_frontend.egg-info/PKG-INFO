@@ -1,0 +1,52 @@
+Metadata-Version: 2.4
+Name: spatio-eco-frontend
+Version: 0.1.0
+Summary: Static frontend shell for the Spatio-Eco platform.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+
+# Frontend Service
+
+`services/frontend` is the current platform presentation layer for Member E.
+
+## Current Scope
+
+- Show project status, model metrics, prediction summaries, and scenario results
+- Render the Nanjing study area in a Cesium-first layout
+- Call the backend directly for live dashboard and scenario data
+- Fallback to local mock data if the backend is not running
+
+## Current Behavior
+
+- Loads `GET /api/v1/dashboard` first
+- Loads `GET /api/v1/predictions/latest` and `GET /api/v1/map/predictions`
+- Calls `POST /api/v1/scenarios/run` for real scenario execution
+- Uses the Cesium CDN when it is reachable
+- Falls back to a static panel view if Cesium is unavailable
+
+## Run
+
+```powershell
+cd services/frontend
+python -m http.server 4173
+```
+
+Open:
+
+- `http://127.0.0.1:4173`
+
+## Current UI Blocks
+
+- Hero and metric strip
+- Cesium map workspace
+- Data source and remote segmentation status cards
+- Scenario simulation form
+- Model registry
+- Prediction summary
+- Architecture, members, docs, and roadmap sections
+
+## Next Fill
+
+- Upgrade point/rectangle layers into richer business overlays
+- Add more answer-defense views and storytelling panels
+- Connect real SAM-2 grid features after remote GPU outputs are imported

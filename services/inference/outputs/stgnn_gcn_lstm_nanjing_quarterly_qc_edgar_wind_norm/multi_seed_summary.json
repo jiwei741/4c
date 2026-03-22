@@ -1,0 +1,96 @@
+{
+  "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm",
+  "seeds": [
+    7,
+    21,
+    42,
+    77,
+    3407
+  ],
+  "num_runs": 5,
+  "prediction_constraints": {},
+  "aggregate": {
+    "mae_mean": 0.05314711481332779,
+    "mae_std": 0.004078023376727883,
+    "mae_min": 0.048523811623454094,
+    "mae_max": 0.05886332504451275,
+    "rmse_mean": 0.07029896825551987,
+    "rmse_std": 0.004524808204502493,
+    "rmse_min": 0.06601241789758205,
+    "rmse_max": 0.07602409273386002
+  },
+  "best_run_by_rmse": {
+    "seed": 21,
+    "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm_seed_21",
+    "output_dir": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_21",
+    "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_21\\best.pt",
+    "best_val_loss": 0.1848792259891828,
+    "test_metrics": {
+      "mae": 0.048523811623454094,
+      "rmse": 0.06601241789758205
+    },
+    "device": "cuda"
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm_seed_7",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_7",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_7\\best.pt",
+      "best_val_loss": 0.19663382321596146,
+      "test_metrics": {
+        "mae": 0.05886332504451275,
+        "rmse": 0.07602409273386002
+      },
+      "device": "cuda"
+    },
+    {
+      "seed": 21,
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm_seed_21",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_21",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_21\\best.pt",
+      "best_val_loss": 0.1848792259891828,
+      "test_metrics": {
+        "mae": 0.048523811623454094,
+        "rmse": 0.06601241789758205
+      },
+      "device": "cuda"
+    },
+    {
+      "seed": 42,
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm_seed_42",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_42",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_42\\best.pt",
+      "best_val_loss": 0.21124358847737312,
+      "test_metrics": {
+        "mae": 0.057154254987835884,
+        "rmse": 0.07562335208058357
+      },
+      "device": "cuda"
+    },
+    {
+      "seed": 77,
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm_seed_77",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_77",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_77\\best.pt",
+      "best_val_loss": 0.2067868560552597,
+      "test_metrics": {
+        "mae": 0.0507366769015789,
+        "rmse": 0.06691440939903259
+      },
+      "device": "cuda"
+    },
+    {
+      "seed": 3407,
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm_seed_3407",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_3407",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_wind_norm\\seed_3407\\best.pt",
+      "best_val_loss": 0.19793380921085676,
+      "test_metrics": {
+        "mae": 0.05045750550925732,
+        "rmse": 0.0669205691665411
+      },
+      "device": "cuda"
+    }
+  ]
+}

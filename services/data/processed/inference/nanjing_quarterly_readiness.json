@@ -1,0 +1,55 @@
+{
+  "sentinel2": {
+    "path": "D:\\4c\\services\\data\\processed\\features\\nanjing\\quarterly\\sentinel2_features.csv",
+    "exists": false,
+    "size_bytes": 0
+  },
+  "grid_nodes": {
+    "path": "D:\\4c\\services\\data\\processed\\features\\nanjing\\quarterly\\grid_nodes.csv",
+    "exists": false,
+    "size_bytes": 0
+  },
+  "era5_raw": {
+    "path": "D:\\4c\\services\\data\\raw\\era5\\nanjing\\era5_land_monthly_nanjing_2020_2024.nc",
+    "exists": false,
+    "size_bytes": 0,
+    "container_type": "missing"
+  },
+  "era5_monthly_points": {
+    "path": "D:\\4c\\services\\data\\processed\\features\\nanjing\\monthly\\era5_monthly_points.csv",
+    "exists": false,
+    "size_bytes": 0
+  },
+  "era5_quarterly": {
+    "path": "D:\\4c\\services\\data\\processed\\features\\nanjing\\quarterly\\era5_features.csv",
+    "exists": false,
+    "size_bytes": 0
+  },
+  "gpp_monthly": {
+    "path": "D:\\4c\\services\\data\\raw\\gpp\\nanjing\\monthly",
+    "exists": false,
+    "existing_count": 0,
+    "missing_count": 60,
+    "missing_preview": [
+      "202001",
+      "202002",
+      "202003",
+      "202004",
+      "202005",
+      "202006",
+      "202007",
+      "202008",
+      "202009",
+      "202010",
+      "202011",
+      "202012"
+    ]
+  },
+  "labels": {
+    "path": "D:\\4c\\services\\data\\processed\\features\\nanjing\\quarterly\\labels.csv",
+    "exists": false,
+    "size_bytes": 0
+  },
+  "training_ready": false,
+  "next_step": "generate ERA5 quarterly features; prepare GPP monthly GeoTIFF files and generate labels.csv"
+}

@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: spatio-eco-postgres
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-spatio_eco}
+      POSTGRES_USER: ${POSTGRES_USER:-spatio_eco}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spatio_eco_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+
+  backend:
+    build:
+      context: ../services/backend
+    container_name: spatio-eco-backend
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: ${BACKEND_PORT:-8000}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ../services/backend:/app
+      - ../services/inference:/workspace/services/inference:ro
+      - ../docs:/workspace/docs:ro
+    working_dir: /app
+    command: python app.py
+    depends_on:
+      - postgres
+
+  frontend:
+    image: python:3.12-slim
+    container_name: spatio-eco-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-4173}:4173"
+    volumes:
+      - ../services/frontend:/app
+    working_dir: /app
+    command: python -m http.server 4173 --bind 0.0.0.0
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

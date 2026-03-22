@@ -1,0 +1,8 @@
+{
+  "input_rows": 18540,
+  "output_rows": 6180,
+  "num_quarters": 20,
+  "num_nodes": 309,
+  "max_assignment_distance_km": 0.0,
+  "output_path": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\era5_features.csv"
+}

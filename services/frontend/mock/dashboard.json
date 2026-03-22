@@ -1,0 +1,307 @@
+{
+  "project": {
+    "name": "Spatio-Eco",
+    "subtitle": "Regional carbon-sink monitoring and forecasting platform",
+    "phase": "Platform MVP",
+    "study_area": {
+      "name": "Nanjing",
+      "node_count": 309,
+      "time_granularity": "quarterly",
+      "time_range": ["2020-Q1", "2024-Q4"],
+      "current_target": "net_carbon_flux",
+      "status": "Quarterly training MVP ready"
+    },
+    "sentinel2_feature_source": "quarterly_proxy"
+  },
+  "architecture": [
+    {
+      "layer": "Data Ingestion",
+      "service": "services/data_ingestion",
+      "owner": "Member B / Member C",
+      "status": "scaffolded",
+      "current_scope": "Download and preprocessing entry points are in place for Sentinel-2, ERA5, EDGAR, NOAA, and GPP.",
+      "next_fill": "Continue with Sentinel-2 raw download orchestration and database import scripts."
+    },
+    {
+      "layer": "Segmentation",
+      "service": "services/segmentation",
+      "owner": "Member B",
+      "status": "remote_only",
+      "current_scope": "Local manifest generation, remote bundle export, and result import pipeline are ready.",
+      "next_fill": "Run real SAM-2 inference on a remote GPU server and export scene-level feature tables."
+    },
+    {
+      "layer": "Inference",
+      "service": "services/inference",
+      "owner": "Member A",
+      "status": "active",
+      "current_scope": "Quarterly LSTM, ST-GNN, multi-step prediction, and scenario simulation are running.",
+      "next_fill": "Switch to SAM-2 derived Sentinel-2 features once remote segmentation outputs are available."
+    }
+  ],
+  "members": [
+    {
+      "member": "Member A",
+      "role": "Algorithms and model training",
+      "status": "active",
+      "completed": ["Quarterly training dataset pipeline", "ST-GNN", "Multi-step prediction", "Scenario simulation"],
+      "remaining": ["Rebuild training data after SAM-2 features arrive", "Competition-grade experiments"]
+    },
+    {
+      "member": "Member B",
+      "role": "Remote sensing and SAM-2",
+      "status": "pending_fill",
+      "completed": ["Sentinel-2 catalog", "Remote GPU boundary"],
+      "remaining": ["Raw Sentinel-2 download", "SAM-2 inference", "Scene-level feature export"]
+    }
+  ],
+  "models": [
+    {
+      "key": "stgnn_single_step_hybrid",
+      "name": "ST-GNN Single-Step",
+      "stage": "default_single_step",
+      "owner": "Member A",
+      "horizon": "single_step",
+      "metrics": { "mae": 0.05548, "rmse": 0.07354 }
+    },
+    {
+      "key": "stgnn_multistep_hybrid",
+      "name": "ST-GNN Multi-Step",
+      "stage": "default_multi_step",
+      "owner": "Member A",
+      "horizon": "multi_step",
+      "metrics": { "mae": 0.05433, "rmse": 0.06798 }
+    },
+    {
+      "key": "lstm_multistep_baseline",
+      "name": "LSTM Multi-Step Baseline",
+      "stage": "baseline",
+      "owner": "Member A",
+      "horizon": "multi_step",
+      "metrics": { "mae": 0.05405, "rmse": 0.07122 }
+    }
+  ],
+  "default_models": {
+    "single_step": "stgnn_single_step_hybrid",
+    "multi_step": "stgnn_multistep_hybrid"
+  },
+  "prediction_preview": {
+    "model_key": "stgnn_multistep_hybrid",
+    "model_name": "ST-GNN Multi-Step",
+    "target_name": "net_carbon_flux",
+    "prediction_window": {
+      "from": "2024-Q1",
+      "to": "2024-Q4"
+    },
+    "forecast_timestamps": ["2025-Q1", "2025-Q2"],
+    "by_horizon": {
+      "2025-Q1": {
+        "count": 309,
+        "min": 0.01609,
+        "max": 0.14492,
+        "mean": 0.07582,
+        "top_nodes": [
+          { "node_id": "109", "value": 0.14492 },
+          { "node_id": "135", "value": 0.14052 },
+          { "node_id": "63", "value": 0.13872 }
+        ]
+      }
+    }
+  },
+  "business_preview": {
+    "model_key": "stgnn_multistep_hybrid",
+    "model_name": "ST-GNN Multi-Step",
+    "compare_model_key": "lstm_multistep_baseline",
+    "compare_model_name": "LSTM Multi-Step Baseline",
+    "horizon": "2025-Q1",
+    "items": [],
+    "summary": {
+      "thresholds": { "p50": 0.07, "p75": 0.09, "p90": 0.12 },
+      "category_counts": {
+        "stable": 155,
+        "elevated": 77,
+        "high": 46,
+        "critical": 31
+      },
+      "top_hotspots": [
+        { "node_id": "109", "value": 0.14492 },
+        { "node_id": "135", "value": 0.14052 },
+        { "node_id": "63", "value": 0.13872 }
+      ],
+      "top_positive_gap": [
+        { "node_id": "109", "value": 0.0132 },
+        { "node_id": "135", "value": 0.0108 }
+      ],
+      "top_negative_gap": []
+    }
+  },
+  "scenario_preview": {
+    "key": "industrial_expansion_enhanced",
+    "name": "Industrial Expansion Enhanced",
+    "summary": {
+      "forecast_horizon": "2025-Q1",
+      "changed_nodes": ["133", "134"],
+      "feature_deltas": {
+        "edgar_emission": 3.6,
+        "built_ratio": 0.096,
+        "vegetation_area_ratio": -0.072,
+        "ndvi_mean": -0.048,
+        "land_surface_temperature": 1.44
+      },
+      "delta_summary": {
+        "count": 309,
+        "min": 0.0,
+        "max": 0.00333,
+        "mean": 0.000096
+      }
+    }
+  },
+  "data_sources": {
+    "study_area": "Nanjing",
+    "sentinel2_switch": {
+      "policy": { "mode": "auto", "preferred_source_key": null, "updated_at": null },
+      "effective_mode": "auto",
+      "effective_reason": "fallback_mock",
+      "active_key": "quarterly_proxy",
+      "active_name": "Quarterly Proxy Features",
+      "active_path": "data/processed/features/nanjing/quarterly/sentinel2_features.csv",
+      "can_switch_to_sam2": false,
+      "switch_rule": "Auto uses SAM-2 when available.",
+      "items": [
+        {
+          "key": "quarterly_proxy",
+          "name": "Quarterly Proxy Features",
+          "path": "data/processed/features/nanjing/quarterly/sentinel2_features.csv",
+          "rows": 6180,
+          "exists": true,
+          "available": true,
+          "stage": "available",
+          "description": "Current local quarterly proxy source."
+        },
+        {
+          "key": "sam2_remote",
+          "name": "Remote SAM-2 Features",
+          "path": "data/processed/features/nanjing/quarterly/sentinel2_features_from_sam2.csv",
+          "rows": 0,
+          "exists": false,
+          "available": false,
+          "stage": "preferred_when_ready",
+          "description": "Remote GPU generated SAM-2 source, reserved for later switch."
+        }
+      ]
+    },
+    "segmentation_remote": {
+      "latest_bundle_dir": "data/processed/segmentation/nanjing/remote_bundle/sam2_remote_bundle_demo",
+      "job_count": 4,
+      "complete_scene_count": 0,
+      "completion_rate": 0.0,
+      "sam2_feature_rows": 0,
+      "sam2_feature_ready": false,
+      "next_action": "wait_for_remote_results",
+      "sam2_feature_path": "data/processed/features/nanjing/quarterly/sentinel2_features_from_sam2.csv"
+    },
+    "items": [
+      {
+        "key": "sentinel2",
+        "name": "Sentinel-2 Features",
+        "owner": "Member B",
+        "required_for": ["segmentation", "training", "map_display"],
+        "active_source": "quarterly_proxy",
+        "active_path": "data/processed/features/nanjing/quarterly/sentinel2_features.csv",
+        "effective_mode": "auto",
+        "effective_reason": "fallback_mock",
+        "sources": [
+          {
+            "key": "quarterly_proxy",
+            "name": "Quarterly Proxy Features",
+            "path": "data/processed/features/nanjing/quarterly/sentinel2_features.csv",
+            "rows": 6180,
+            "exists": true,
+            "available": true,
+            "stage": "available",
+            "description": "Current local quarterly proxy source."
+          },
+          {
+            "key": "sam2_remote",
+            "name": "Remote SAM-2 Features",
+            "path": "data/processed/features/nanjing/quarterly/sentinel2_features_from_sam2.csv",
+            "rows": 0,
+            "exists": false,
+            "available": false,
+            "stage": "preferred_when_ready",
+            "description": "Remote GPU generated SAM-2 source, reserved for later switch."
+          }
+        ]
+      },
+      {
+        "key": "era5",
+        "name": "ERA5 Quarterly Features",
+        "owner": "Member C",
+        "required_for": ["training", "inference"],
+        "path": "data/processed/features/nanjing/quarterly/era5_features.csv",
+        "exists": true,
+        "rows": 6180,
+        "description": "Quarterly meteorological features."
+      },
+      {
+        "key": "edgar",
+        "name": "EDGAR Quarterly Features",
+        "owner": "Member C",
+        "required_for": ["training", "scenario"],
+        "path": "data/processed/features/nanjing/quarterly/edgar_features.csv",
+        "exists": true,
+        "rows": 6180,
+        "description": "Quarterly emission proxy features."
+      },
+      {
+        "key": "labels",
+        "name": "GPP / Net Carbon Flux Labels",
+        "owner": "Member A",
+        "required_for": ["training", "evaluation"],
+        "path": "data/processed/features/nanjing/quarterly/labels_qc_complete.csv",
+        "exists": true,
+        "rows": 6180,
+        "description": "Quarterly labels."
+      }
+    ]
+  },
+  "management": {
+    "service_summary": { "total": 6, "active": 3, "scaffolded": 2, "pending_fill": 1 },
+    "data_summary": {
+      "ready_data_count": 4,
+      "tracked_data_count": 4,
+      "active_sentinel2_source": "quarterly_proxy",
+      "effective_source_mode": "auto"
+    },
+    "model_summary": {
+      "count": 3,
+      "leader_key": "stgnn_multistep_hybrid",
+      "leader_name": "ST-GNN Multi-Step",
+      "leader_rmse": 0.06798,
+      "leader_mae": 0.05433
+    },
+    "segmentation_summary": {
+      "job_count": 4,
+      "complete_scene_count": 0,
+      "completion_rate": 0,
+      "sam2_feature_ready": false,
+      "next_action": "wait_for_remote_results"
+    },
+    "recommendations": [
+      "Keep using quarterly_proxy until remote SAM-2 features are imported.",
+      "Remote segmentation jobs are still incomplete. Wait for more scene outputs."
+    ]
+  },
+  "docs": [
+    { "title": "Spatio-Eco Detailed Plan", "path": "Spatio-Eco_详细方案.md", "group": "core" },
+    { "title": "Member AA Data Checklist", "path": "docs/02_成员AA模型训练数据补充清单.md", "group": "algorithm" },
+    { "title": "Platform Boundaries", "path": "docs/12_平台框架与服务边界_2026-03-21.md", "group": "platform" },
+    { "title": "SAM-2 Remote Execution Guide", "path": "docs/14_SAM2远程执行与本地边界_2026-03-21.md", "group": "segmentation" }
+  ],
+  "roadmap": [
+    "Continue local work on backend, frontend, data ingestion, and inference.",
+    "Keep real SAM-2 execution on a remote GPU server instead of this laptop.",
+    "Switch the training source to sentinel2_features_from_sam2.csv once remote segmentation results are imported.",
+    "Keep improving platform integration and competition demo views."
+  ]
+}

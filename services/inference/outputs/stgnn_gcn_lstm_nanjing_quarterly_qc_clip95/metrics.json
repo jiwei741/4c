@@ -1,0 +1,22 @@
+{
+  "best_val_loss": 1.0110212961832683,
+  "test_metrics": {
+    "mae": 0.1264738030731678,
+    "rmse": 0.14783169329166412
+  },
+  "normalization": {
+    "target": {
+      "mean": [
+        0.2124210000038147
+      ],
+      "std": [
+        0.1344577968120575
+      ]
+    }
+  },
+  "target_transform": {
+    "name": "quantile_clip",
+    "upper_quantile": 0.95,
+    "clip_max": 0.4652999937534332
+  }
+}

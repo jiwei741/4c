@@ -1,0 +1,17 @@
+{
+  "rows": 18540,
+  "num_nodes": 309,
+  "time_steps": 60,
+  "variables": [
+    "t2m",
+    "tp",
+    "u10",
+    "v10",
+    "sp",
+    "lai_hv"
+  ],
+  "container_type": "zip",
+  "source_path": "D:\\4c\\data\\raw\\era5\\nanjing\\era5_land_monthly_nanjing_2020_2024.nc",
+  "opened_path": "C:\\Users\\dell\\AppData\\Local\\Temp\\tmppqxq190x\\data_stream-moda.nc",
+  "output_path": "D:\\4c\\data\\processed\\features\\nanjing\\monthly\\era5_monthly_points.csv"
+}

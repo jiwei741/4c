@@ -1,0 +1,30 @@
+experiment_name: stgnn_gcn_lstm_nanjing_quarterly_qc_clip95
+
+model:
+  name: stgnn_gcn_lstm
+  graph_hidden_dim: 32
+  temporal_hidden_dim: 64
+  lstm_layers: 1
+  dropout: 0.1
+
+data:
+  input_window: 4
+  horizon: 1
+  target_dim: 1
+
+training:
+  batch_size: 2
+  epochs: 50
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  target_normalization: true
+  target_transform:
+    name: quantile_clip
+    upper_quantile: 0.95
+  train_ratio: 0.6
+  val_ratio: 0.2
+  seed: 42
+  device: auto
+
+output:
+  dir: outputs/stgnn_gcn_lstm_nanjing_quarterly_qc_clip95
