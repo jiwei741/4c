@@ -11,244 +11,235 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body data-page="overview">
-    <main class="page-shell">
-      <section class="hero">
-        <div class="hero-copy">
-          <div class="hero-topline">
-            <p class="eyebrow" data-i18n="brandEyebrow">Spatio-Eco Platform</p>
-            <div class="lang-switch" aria-label="Language switch">
-              <button class="lang-button is-active" id="lang-zh" type="button">中文</button>
-              <button class="lang-button" id="lang-en" type="button">EN</button>
-            </div>
+    <div class="app-frame">
+      <header class="topbar">
+        <a class="brand" href="./index.html" aria-label="Spatio-Eco Platform">
+          <span class="brand-mark">SE</span>
+          <span class="brand-copy">
+            <span class="brand-kicker" data-i18n="brandEyebrow">Spatio-Eco Platform</span>
+            <strong class="brand-title">Spatio-Eco</strong>
+          </span>
+        </a>
+
+        <nav class="page-nav" aria-label="Platform navigation">
+          <a class="nav-link is-active" href="./index.html" data-page-link="overview" data-i18n="navOverview">Overview</a>
+          <a class="nav-link" href="./models.html" data-page-link="models" data-i18n="navModels">Models</a>
+          <a class="nav-link" href="./operations.html" data-page-link="operations" data-i18n="navOperations">Operations</a>
+          <a class="nav-link" href="./research.html" data-page-link="research" data-i18n="navResearch">Research</a>
+        </nav>
+
+        <div class="topbar-actions">
+          <a
+            class="shell-link"
+            href="http://127.0.0.1:8000/api/v1/health"
+            target="_blank"
+            rel="noreferrer"
+            data-i18n="backendHealthLink"
+          >Backend Health</a>
+          <div class="lang-switch" aria-label="Language switch">
+            <button class="lang-button is-active" id="lang-zh" type="button">中文</button>
+            <button class="lang-button" id="lang-en" type="button">EN</button>
           </div>
-          <h1 data-i18n="heroTitle">Carbon sink monitoring and forecasting workspace</h1>
-          <p class="hero-text" data-i18n="heroDescription">
-            The local platform keeps model training, backend APIs, and frontend
-            presentation on this machine, while real SAM-2 segmentation remains
-            reserved for remote GPU execution.
+        </div>
+      </header>
+
+      <main class="page-shell">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow" data-i18n="overviewHeroEyebrow">Operational Workspace</p>
+            <h1 data-i18n="overviewHeroTitle">Regional carbon sink operations cockpit</h1>
+            <p class="hero-text" data-i18n="overviewHeroDescription">
+              Use the active quarterly model, source switch, and live scenario controls
+              to monitor what the platform can already deliver on this laptop.
+            </p>
+            <div class="hero-meta" id="hero-meta"></div>
+          </div>
+
+          <aside class="hero-panel">
+            <p class="panel-label" data-i18n="platformPhaseLabel">Platform Phase</p>
+            <p class="panel-value" id="project-phase">Loading</p>
+            <div class="hero-stack" id="hero-stack"></div>
+          </aside>
+        </section>
+
+        <section class="metrics-strip" id="metrics-strip"></section>
+
+        <section class="page-intro-card">
+          <div>
+            <p class="section-tag" data-i18n="overviewIntroTag">Mission Board</p>
+            <h2 data-i18n="overviewIntroTitle">Operate around one clear question</h2>
+          </div>
+          <p class="page-intro-text" data-i18n="overviewIntroText">
+            Which model is currently leading, which Sentinel-2 source is active,
+            and how does a policy intervention alter the forecasted carbon sink pattern?
           </p>
-          <div class="hero-meta" id="hero-meta"></div>
-        </div>
-        <div class="hero-panel">
-          <p class="panel-label" data-i18n="platformPhaseLabel">Platform Phase</p>
-          <p class="panel-value" id="project-phase">Loading</p>
-          <div class="hero-stack" id="hero-stack"></div>
-        </div>
-      </section>
+        </section>
 
-      <nav class="page-nav" aria-label="Platform navigation">
-        <a class="nav-link is-active" href="./index.html" data-page-link="overview" data-i18n="navOverview">Overview</a>
-        <a class="nav-link" href="./models.html" data-page-link="models" data-i18n="navModels">Models</a>
-        <a class="nav-link" href="./operations.html" data-page-link="operations" data-i18n="navOperations">Operations</a>
-        <a class="nav-link" href="./research.html" data-page-link="research" data-i18n="navResearch">Research</a>
-      </nav>
-
-      <section class="metrics-strip" id="metrics-strip"></section>
-
-      <section class="workspace-grid">
-        <article class="section-card map-card">
-          <div class="section-head">
-            <div>
-              <p class="section-tag" data-i18n="businessMapTag">Business Map</p>
-              <h2 data-i18n="forecastWorkspaceTitle">Forecast workspace</h2>
+        <section class="workspace-grid">
+          <article class="section-card map-card">
+            <div class="section-head">
+              <div>
+                <p class="section-tag" data-i18n="forecastDeckTag">Forecast Deck</p>
+                <h2 data-i18n="forecastWorkspaceTitle">Spatial forecast workspace</h2>
+              </div>
+              <div class="map-controls">
+                <label class="control-field">
+                  <span data-i18n="modelLabel">Model</span>
+                  <select id="model-select"></select>
+                </label>
+                <label class="control-field">
+                  <span data-i18n="compareLabel">Compare</span>
+                  <select id="compare-model-select"></select>
+                </label>
+                <label class="control-field">
+                  <span data-i18n="horizonLabel">Horizon</span>
+                  <select id="horizon-select"></select>
+                </label>
+              </div>
             </div>
-            <div class="map-controls">
-              <label class="control-field">
-                <span data-i18n="modelLabel">Model</span>
-                <select id="model-select"></select>
-              </label>
-              <label class="control-field">
-                <span data-i18n="compareLabel">Compare</span>
-                <select id="compare-model-select"></select>
-              </label>
-              <label class="control-field">
-                <span data-i18n="horizonLabel">Horizon</span>
-                <select id="horizon-select"></select>
-              </label>
+
+            <div class="map-toolbar">
+              <button class="toolbar-button is-active" id="show-forecast" type="button" data-i18n="forecastButton">Forecast</button>
+              <button class="toolbar-button" id="show-hotspots" type="button" data-i18n="hotspotsButton">Hotspots</button>
+              <button class="toolbar-button" id="show-gap" type="button" data-i18n="modelGapButton">Model Gap</button>
+              <button class="toolbar-button" id="show-delta" type="button" data-i18n="scenarioDeltaButton">Scenario Delta</button>
+              <button class="toolbar-button ghost" id="reset-map" type="button" data-i18n="resetButton">Reset</button>
             </div>
-          </div>
 
-          <div class="map-toolbar">
-            <button class="toolbar-button is-active" id="show-forecast" type="button" data-i18n="forecastButton">Forecast</button>
-            <button class="toolbar-button" id="show-hotspots" type="button" data-i18n="hotspotsButton">Hotspots</button>
-            <button class="toolbar-button" id="show-gap" type="button" data-i18n="modelGapButton">Model Gap</button>
-            <button class="toolbar-button" id="show-delta" type="button" data-i18n="scenarioDeltaButton">Scenario Delta</button>
-            <button class="toolbar-button" id="reset-map" type="button" data-i18n="resetButton">Reset</button>
-          </div>
-
-          <div class="map-stage">
-            <div id="cesium-container"></div>
-            <div id="map-fallback" class="map-fallback" data-i18n="mapFallback">
-              Cesium is unavailable in the current browser session. The rest of
-              the platform remains usable, but the map will stay in panel mode.
+            <div class="map-stage">
+              <div id="cesium-container"></div>
+              <div id="map-fallback" class="map-fallback" data-i18n="mapFallback">
+                Cesium is unavailable in the current browser session. The rest of the platform remains usable.
+              </div>
             </div>
-          </div>
 
-          <div class="map-meta">
-            <div class="map-legend" id="map-legend"></div>
-            <div class="map-status" id="map-status"></div>
-          </div>
-        </article>
+            <div class="map-meta">
+              <div class="map-legend" id="map-legend"></div>
+              <div class="map-status" id="map-status"></div>
+            </div>
+          </article>
 
-        <aside class="side-rail">
-          <article class="section-card compact-card">
+          <aside class="side-rail">
+            <article class="section-card compact-card">
+              <div class="section-head">
+                <div>
+                  <p class="section-tag" data-i18n="missionBriefTag">Mission Brief</p>
+                  <h2 data-i18n="missionBriefTitle">Current operating picture</h2>
+                </div>
+              </div>
+              <div class="stack-list" id="overview-story"></div>
+            </article>
+
+            <article class="section-card compact-card">
+              <div class="section-head">
+                <div>
+                  <p class="section-tag" data-i18n="scenarioLabTag">Scenario Lab</p>
+                  <h2 data-i18n="liveScenarioTitle">Live scenario simulation</h2>
+                </div>
+              </div>
+              <form id="scenario-form" class="scenario-form">
+                <label class="control-field">
+                  <span data-i18n="modelLabel">Model</span>
+                  <select name="model_key" id="scenario-model-select"></select>
+                </label>
+                <label class="control-field">
+                  <span data-i18n="presetLabel">Preset</span>
+                  <select name="preset">
+                    <option value="industrial_expansion" data-i18n="presetIndustrialExpansion">Industrial expansion</option>
+                    <option value="greening_restoration" data-i18n="presetGreeningRestoration">Greening restoration</option>
+                  </select>
+                </label>
+                <label class="control-field">
+                  <span data-i18n="nodeIdsLabel">Node IDs</span>
+                  <input name="node_ids" value="133,134" />
+                </label>
+                <div class="field-row">
+                  <label class="control-field">
+                    <span data-i18n="intensityLabel">Intensity</span>
+                    <input name="intensity" type="number" step="0.1" value="1.2" />
+                  </label>
+                  <label class="control-field">
+                    <span data-i18n="hopsLabel">Hops</span>
+                    <input name="hops" type="number" min="0" max="4" value="2" />
+                  </label>
+                </div>
+                <div class="field-row">
+                  <label class="control-field">
+                    <span data-i18n="attenuationLabel">Attenuation</span>
+                    <input name="attenuation" type="number" step="0.05" min="0" max="1" value="0.65" />
+                  </label>
+                  <label class="control-field">
+                    <span data-i18n="temporalModeLabel">Temporal mode</span>
+                    <select name="temporal_mode">
+                      <option value="linear" data-i18n="temporalLinear">Linear</option>
+                      <option value="uniform" data-i18n="temporalUniform">Uniform</option>
+                      <option value="last" data-i18n="temporalLast">Last-step boost</option>
+                    </select>
+                  </label>
+                </div>
+                <button type="submit" id="scenario-submit" data-i18n="runScenarioButton">Run scenario</button>
+              </form>
+              <div class="scenario-panel" id="scenario-panel"></div>
+            </article>
+
+            <article class="section-card compact-card">
+              <div class="section-head">
+                <div>
+                  <p class="section-tag" data-i18n="hotspotQueueTag">Hotspot Queue</p>
+                  <h2 data-i18n="businessHotspotsTitle">Priority hotspot watchlist</h2>
+                </div>
+              </div>
+              <div class="stack-list" id="hotspot-list"></div>
+            </article>
+          </aside>
+        </section>
+
+        <section class="grid-two">
+          <article class="section-card">
             <div class="section-head">
               <div>
                 <p class="section-tag" data-i18n="sourcePolicyTag">Source Policy</p>
-                <h2 data-i18n="sentinel2SwitchTitle">Sentinel-2 switch panel</h2>
+                <h2 data-i18n="sentinel2SwitchTitle">Sentinel-2 source governance</h2>
               </div>
             </div>
             <div class="policy-summary" id="source-policy-summary"></div>
             <div class="stack-list" id="source-policy-grid"></div>
           </article>
 
-          <article class="section-card compact-card">
+          <article class="section-card">
             <div class="section-head">
               <div>
-                <p class="section-tag" data-i18n="remoteSegmentationTag">Remote Segmentation</p>
-                <h2 data-i18n="sam2StatusTitle">SAM-2 execution status</h2>
+                <p class="section-tag" data-i18n="segmentationTrackTag">Segmentation Track</p>
+                <h2 data-i18n="sam2StatusTitle">Remote SAM-2 readiness</h2>
               </div>
             </div>
             <div class="stack-list" id="segmentation-status"></div>
           </article>
+        </section>
 
-          <article class="section-card compact-card">
+        <section class="grid-two">
+          <article class="section-card">
             <div class="section-head">
               <div>
-                <p class="section-tag" data-i18n="hotspotWatchTag">Hotspot Watch</p>
-                <h2 data-i18n="businessHotspotsTitle">Business hotspots</h2>
+                <p class="section-tag" data-i18n="platformStatusTag">Platform Status</p>
+                <h2 data-i18n="platformOverviewTitle">Execution status and next actions</h2>
               </div>
             </div>
-            <div class="stack-list" id="hotspot-list"></div>
+            <div class="management-grid" id="management-grid"></div>
           </article>
 
-          <article class="section-card compact-card">
+          <article class="section-card">
             <div class="section-head">
               <div>
-                <p class="section-tag" data-i18n="scenarioApiTag">Scenario API</p>
-                <h2 data-i18n="liveScenarioTitle">Live scenario run</h2>
+                <p class="section-tag" data-i18n="forecastSummaryTag">Forecast Summary</p>
+                <h2 data-i18n="forecastBreakdownTitle">Forecast horizon breakdown</h2>
               </div>
             </div>
-            <form id="scenario-form" class="scenario-form">
-              <label class="control-field">
-                <span data-i18n="modelLabel">Model</span>
-                <select name="model_key" id="scenario-model-select"></select>
-              </label>
-              <label class="control-field">
-                <span data-i18n="presetLabel">Preset</span>
-                <select name="preset">
-                  <option value="industrial_expansion">industrial_expansion</option>
-                  <option value="greening_restoration">greening_restoration</option>
-                </select>
-              </label>
-              <label class="control-field">
-                <span data-i18n="nodeIdsLabel">Node IDs</span>
-                <input name="node_ids" value="133,134" />
-              </label>
-              <div class="field-row">
-                <label class="control-field">
-                  <span data-i18n="intensityLabel">Intensity</span>
-                  <input name="intensity" type="number" step="0.1" value="1.2" />
-                </label>
-                <label class="control-field">
-                  <span data-i18n="hopsLabel">Hops</span>
-                  <input name="hops" type="number" min="0" max="4" value="2" />
-                </label>
-              </div>
-              <div class="field-row">
-                <label class="control-field">
-                  <span data-i18n="attenuationLabel">Attenuation</span>
-                  <input name="attenuation" type="number" step="0.05" min="0" max="1" value="0.65" />
-                </label>
-                <label class="control-field">
-                  <span data-i18n="temporalModeLabel">Temporal Mode</span>
-                  <select name="temporal_mode">
-                    <option value="linear">linear</option>
-                    <option value="uniform">uniform</option>
-                    <option value="last">last</option>
-                  </select>
-                </label>
-              </div>
-              <button type="submit" id="scenario-submit" data-i18n="runScenarioButton">Run scenario</button>
-            </form>
-            <div class="scenario-panel" id="scenario-panel"></div>
+            <div class="stack-list" id="prediction-grid"></div>
           </article>
-        </aside>
-      </section>
-
-      <section class="grid-two">
-        <article class="section-card">
-          <div class="section-head">
-            <div>
-              <p class="section-tag" data-i18n="managementTag">Management</p>
-              <h2 data-i18n="platformOverviewTitle">Platform overview</h2>
-            </div>
-          </div>
-          <div class="management-grid" id="management-grid"></div>
-        </article>
-        <article class="section-card">
-          <div class="section-head">
-            <div>
-              <p class="section-tag" data-i18n="modelRegistryTag">Model Registry</p>
-              <h2 data-i18n="modelMetricsTitle">Model metrics</h2>
-            </div>
-          </div>
-          <div class="model-grid" id="model-grid"></div>
-        </article>
-      </section>
-
-      <section class="grid-two">
-        <article class="section-card">
-          <div class="section-head">
-            <div>
-              <p class="section-tag" data-i18n="predictionSummaryTag">Prediction Summary</p>
-              <h2 data-i18n="forecastBreakdownTitle">Forecast breakdown</h2>
-            </div>
-          </div>
-          <div class="stack-list" id="prediction-grid"></div>
-        </article>
-        <article class="section-card">
-          <div class="section-head">
-            <div>
-              <p class="section-tag" data-i18n="servicesTag">Services</p>
-              <h2 data-i18n="architectureLayersTitle">Architecture layers</h2>
-            </div>
-          </div>
-          <div class="stack-list" id="architecture-grid"></div>
-        </article>
-      </section>
-
-      <section class="grid-two">
-        <article class="section-card">
-          <div class="section-head">
-            <div>
-              <p class="section-tag" data-i18n="membersTag">Members</p>
-              <h2 data-i18n="teamStatusTitle">Team status</h2>
-            </div>
-          </div>
-          <div class="stack-list" id="member-grid"></div>
-        </article>
-        <article class="section-card">
-          <div class="section-head">
-            <div>
-              <p class="section-tag" data-i18n="documentsTag">Documents</p>
-              <h2 data-i18n="projectReferencesTitle">Project references</h2>
-            </div>
-          </div>
-          <div class="stack-list" id="docs-grid"></div>
-        </article>
-      </section>
-
-      <section class="section-card">
-        <div class="section-head">
-          <div>
-            <p class="section-tag" data-i18n="roadmapTag">Roadmap</p>
-            <h2 data-i18n="nextStepsTitle">Next steps</h2>
-          </div>
-        </div>
-        <ol class="roadmap" id="roadmap-list"></ol>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
 
     <script src="https://unpkg.com/cesium@1.118.2/Build/Cesium/Cesium.js"></script>
     <script src="./app.js"></script>

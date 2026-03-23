@@ -3,13 +3,16 @@ const URLS = {
   dashboard: `${API_BASE}/dashboard`,
   prediction: `${API_BASE}/predictions/latest`,
   predictionLayer: `${API_BASE}/map/predictions`,
-  predictionAnalytics: `${API_BASE}/map/analytics`,
+  analytics: `${API_BASE}/map/analytics`,
   runScenario: `${API_BASE}/scenarios/run`,
   platformStatus: `${API_BASE}/admin/platform-status`,
   sourcePolicy: `${API_BASE}/admin/source-policy`,
   segmentationOverview: `${API_BASE}/admin/segmentation-overview`,
+  dataSources: `${API_BASE}/data-sources`,
   fallbackDashboard: "./mock/dashboard.json",
 };
+
+const NO_COMPARE = "__none__";
 
 const I18N = {
   en: {
@@ -19,119 +22,85 @@ const I18N = {
     navModels: "Models",
     navOperations: "Operations",
     navResearch: "Research",
-    heroTitle: "Carbon sink monitoring and forecasting workspace",
-    heroDescription:
-      "The local platform keeps model training, backend APIs, and frontend presentation on this machine, while real SAM-2 segmentation remains reserved for remote GPU execution.",
-    modelsHeroTitle: "Model evaluation and forecast laboratory",
-    modelsHeroDescription: "Focus on model metrics, multi-step forecasts, and hotspot ranking.",
-    operationsHeroTitle: "Operations and remote segmentation control",
-    operationsHeroDescription: "Track source policy, remote SAM-2 status, service readiness, and member boundaries.",
-    researchHeroTitle: "Research notes, references, and delivery scope",
-    researchHeroDescription: "Keep the project documentation and roadmap readable for review and handoff.",
+    backendHealthLink: "Backend Health",
+    modelApiLink: "Model API",
+    opsApiLink: "Operations API",
+    architectureApiLink: "Architecture API",
+    overviewHeroEyebrow: "Operational Workspace",
+    overviewHeroTitle: "Regional carbon sink operations cockpit",
+    overviewHeroDescription:
+      "Use the active quarterly model, source switch, and live scenario controls to monitor what the platform can already deliver on this laptop.",
+    overviewIntroTag: "Mission Board",
+    overviewIntroTitle: "Operate around one clear question",
+    overviewIntroText:
+      "Which model is currently leading, which Sentinel-2 source is active, and how does a policy intervention alter the forecasted carbon sink pattern?",
+    modelsHeroEyebrow: "Model Lab",
+    modelsHeroTitle: "Benchmark, compare, and defend the current model stack",
+    modelsHeroDescription:
+      "Keep the model discussion focused on measurable differences: RMSE, MAE, horizon-specific behavior, and scenario response.",
+    modelsIntroTag: "Evaluation Spine",
+    modelsIntroTitle: "Keep one lab view for both development and review",
+    modelsIntroText:
+      "This page should answer which model is leading, why it leads, how stable the gain is, and where the graph model still fails to outperform the baseline.",
+    operationsHeroEyebrow: "Operations Center",
+    operationsHeroTitle: "Run the local platform with clear boundaries",
+    operationsHeroDescription:
+      "Track source switching, remote segmentation readiness, service health, and team ownership without mixing operational status with model evaluation.",
+    operationsIntroTag: "Operational Scope",
+    operationsIntroTitle: "Separate what is local, what is remote, and what is still scaffolded",
+    operationsIntroText:
+      "The platform is already usable on this laptop, but real SAM-2 segmentation remains a remote-GPU task. This page keeps that boundary explicit.",
+    researchHeroEyebrow: "Research Desk",
+    researchHeroTitle: "Document the methodology, boundary, and evidence chain",
+    researchHeroDescription:
+      "Keep the project readable for competition review, code handoff, and later migration to a remote GPU workflow.",
+    researchIntroTag: "Research Context",
+    researchIntroTitle: "Make the prototype legible as a scientific system",
+    researchIntroText:
+      "Explain the study area, data lineage, architecture, member scope, and next validation steps with enough rigor to support reporting and review.",
     platformPhaseLabel: "Platform Phase",
-    businessMapTag: "Business Map",
-    forecastWorkspaceTitle: "Forecast workspace",
-    modelLabel: "Model",
-    compareLabel: "Compare",
-    horizonLabel: "Horizon",
-    forecastButton: "Forecast",
-    hotspotsButton: "Hotspots",
-    modelGapButton: "Model Gap",
-    scenarioDeltaButton: "Scenario Delta",
-    resetButton: "Reset",
-    mapFallback: "Cesium is unavailable in the current browser session. The map will stay in panel mode.",
+    forecastDeckTag: "Forecast Deck",
+    forecastWorkspaceTitle: "Spatial forecast workspace",
+    missionBriefTag: "Mission Brief",
+    missionBriefTitle: "Current operating picture",
+    scenarioLabTag: "Scenario Lab",
+    hotspotQueueTag: "Hotspot Queue",
     sourcePolicyTag: "Source Policy",
-    sentinel2SwitchTitle: "Sentinel-2 switch panel",
-    remoteSegmentationTag: "Remote Segmentation",
-    sam2StatusTitle: "SAM-2 execution status",
-    hotspotWatchTag: "Hotspot Watch",
-    businessHotspotsTitle: "Business hotspots",
-    scenarioApiTag: "Scenario API",
-    liveScenarioTitle: "Live scenario run",
-    presetLabel: "Preset",
-    nodeIdsLabel: "Node IDs",
-    intensityLabel: "Intensity",
-    hopsLabel: "Hops",
-    attenuationLabel: "Attenuation",
-    temporalModeLabel: "Temporal Mode",
-    runScenarioButton: "Run scenario",
-    managementTag: "Management",
-    platformOverviewTitle: "Platform overview",
+    sentinel2SwitchTitle: "Sentinel-2 source governance",
+    segmentationTrackTag: "Segmentation Track",
+    sam2StatusTitle: "Remote SAM-2 readiness",
+    platformStatusTag: "Platform Status",
+    platformOverviewTitle: "Execution status and next actions",
+    forecastSummaryTag: "Forecast Summary",
+    forecastBreakdownTitle: "Forecast horizon breakdown",
+    labControlsTag: "Lab Controls",
+    labControlsTitle: "Select the active benchmark view",
     modelRegistryTag: "Model Registry",
-    modelMetricsTitle: "Model metrics",
-    predictionSummaryTag: "Prediction Summary",
-    forecastBreakdownTitle: "Forecast breakdown",
+    modelMetricsTitle: "Current model artifacts",
+    benchmarkDeckTag: "Benchmark Deck",
+    benchmarkDeckTitle: "Winner, runner-up, and baseline gap",
+    gapAnalysisTag: "Gap Analysis",
+    gapAnalysisTitle: "Where the graph model gains or loses",
+    scenarioResponseTag: "Scenario Response",
+    scenarioResponseTitle: "Reference scenario sensitivity",
+    commandBoardTag: "Command Board",
+    commandBoardTitle: "Current execution state",
+    dataInventoryTag: "Data Inventory",
+    dataInventoryTitle: "Tracked sources and readiness",
     servicesTag: "Services",
-    architectureLayersTitle: "Architecture layers",
+    architectureLayersTitle: "Service boundaries and next fill",
     membersTag: "Members",
-    teamStatusTitle: "Team status",
+    teamStatusTitle: "Delivery ownership and remaining work",
+    studyDesignTag: "Study Design",
+    studyDesignTitle: "Study area and training target",
     documentsTag: "Documents",
-    projectReferencesTitle: "Project references",
+    projectReferencesTitle: "Key references and implementation notes",
+    methodologyTag: "Methodology",
+    methodologyTitle: "Dataset lineage and scientific guardrails",
     roadmapTag: "Roadmap",
-    nextStepsTitle: "Next steps",
-    noCompare: "No compare",
-    auto: "Auto",
-    prefer: "Prefer",
-    preferred: "Preferred",
-    reserve: "Reserve",
-    ready: "ready",
-    waiting: "waiting",
-    yes: "Yes",
-    no: "No",
-    count: "Count",
-    minMax: "Min / Max",
-    mean: "Mean",
-    target: "Target",
-    sentinelSource: "Sentinel-2 source",
-    policy: "Policy",
-    remoteJobs: "Remote jobs",
-    modelLeader: "Model leader",
-    sourceMode: "Source mode",
-    policyMode: "Policy mode",
-    effectiveSource: "Effective source",
-    reason: "Reason",
-    rows: "Rows",
-    current: "Current",
-    latestBundle: "Latest bundle",
-    jobs: "Jobs",
-    completion: "Completion",
-    csvRows: "CSV rows",
-    nextAction: "Next action",
-    topHotspots: "Top hotspots",
-    positiveGap: "Positive model gap",
-    noGap: "No comparison gap available",
-    serviceSummary: "Service summary",
-    active: "Active",
-    scaffolded: "Scaffolded",
-    pending: "Pending",
-    dataSummary: "Data summary",
-    recommendedNext: "Recommended next",
-    hotspotDistribution: "Hotspot distribution",
-    critical: "Critical",
-    high: "High",
-    elevated: "Elevated",
-    stable: "Stable",
-    mae: "MAE",
-    rmse: "RMSE",
-    changedNodes: "Changed nodes",
-    deltaMean: "Delta mean",
-    deltaMax: "Delta max",
-    running: "Running...",
-    scenarioUnavailable: "Scenario API is unavailable in fallback mode.",
-    updateFailed: "Source policy update failed",
-    scenarioFailed: "Scenario run failed",
-    low: "Low",
-    highValue: "High",
-    panelMode: "panel mode",
-    noItems: "no items",
-    cells: "cells",
-    min: "min",
-    max: "max",
-    presetIndustrialExpansion: "Industrial expansion",
-    presetGreeningRestoration: "Greening restoration",
-    temporalLinear: "Linear",
-    temporalUniform: "Uniform",
-    temporalLast: "Last-step boost",
+    nextStepsTitle: "Immediate next milestones",
+    businessHotspotsTitle: "Priority hotspot watchlist",
+    liveScenarioTitle: "Live scenario simulation",
   },
   zh: {
     documentTitle: "Spatio-Eco 平台",
@@ -140,123 +109,267 @@ const I18N = {
     navModels: "模型",
     navOperations: "运维",
     navResearch: "科研",
-    heroTitle: "碳汇监测与预测工作台",
-    heroDescription: "本地平台承载模型结果、后端接口与前端展示，真实 SAM-2 分割保留给远程 GPU 执行。",
-    modelsHeroTitle: "模型评估与预测实验室",
-    modelsHeroDescription: "集中展示模型指标、多步预测结果和热点排序。",
-    operationsHeroTitle: "运维与远程分割控制台",
-    operationsHeroDescription: "跟踪数据源策略、远程 SAM-2 状态、服务可用性和成员边界。",
-    researchHeroTitle: "科研文档、资料与交付范围",
-    researchHeroDescription: "把项目文档和路线图整理成适合答辩与交接的形式。",
+    backendHealthLink: "后端健康检查",
+    modelApiLink: "模型接口",
+    opsApiLink: "运维接口",
+    architectureApiLink: "架构接口",
+    overviewHeroEyebrow: "业务驾驶舱",
+    overviewHeroTitle: "区域碳汇监测与预测总览台",
+    overviewHeroDescription: "围绕当前季度模型、数据源切换和情景推演，查看本机已经能稳定交付的内容。",
+    overviewIntroTag: "任务焦点",
+    overviewIntroTitle: "围绕一个明确问题组织总览页",
+    overviewIntroText: "当前哪个模型领先、正在使用哪套 Sentinel-2 特征源、一次政策干预将如何改变预测格局。",
+    modelsHeroEyebrow: "模型实验室",
+    modelsHeroTitle: "用可度量指标解释当前模型体系",
+    modelsHeroDescription: "把讨论聚焦到 RMSE、MAE、预测步长表现和情景响应，而不是停留在模型名称本身。",
+    modelsIntroTag: "评估主线",
+    modelsIntroTitle: "让开发视图和答辩视图使用同一套模型叙事",
+    modelsIntroText: "这一页回答谁领先、为什么领先、优势是否稳定，以及图模型在哪些地方仍未显著优于基线。",
+    operationsHeroEyebrow: "运维中心",
+    operationsHeroTitle: "把本地能力、远程能力和预留能力分清楚",
+    operationsHeroDescription: "统一查看数据源切换、远程分割状态、服务健康度和成员边界，但不与模型评价混在一起。",
+    operationsIntroTag: "运行边界",
+    operationsIntroTitle: "明确哪些在本地运行，哪些必须远程执行，哪些仍是骨架",
+    operationsIntroText: "本地平台已经可用，但真实 SAM-2 仍然是远程 GPU 任务，这一页专门把这条边界讲清楚。",
+    researchHeroEyebrow: "科研台账",
+    researchHeroTitle: "把方法、边界和证据链整理成可复核的系统",
+    researchHeroDescription: "这一页用于支撑比赛汇报、代码移交以及后续迁移到远程 GPU 的工程说明。",
+    researchIntroTag: "科研语境",
+    researchIntroTitle: "让当前原型具备科研叙述上的完整性",
+    researchIntroText: "清楚解释研究区、数据血缘、系统结构、成员职责和下一步验证路径。",
     platformPhaseLabel: "平台阶段",
-    businessMapTag: "业务地图",
-    forecastWorkspaceTitle: "预测工作区",
-    modelLabel: "模型",
-    compareLabel: "对比",
-    horizonLabel: "预测期",
-    forecastButton: "预测值",
-    hotspotsButton: "热点",
-    modelGapButton: "模型差异",
-    scenarioDeltaButton: "情景增量",
-    resetButton: "重置",
-    mapFallback: "当前浏览器无法加载 Cesium，地图将保持面板模式。",
+    forecastDeckTag: "预测工作区",
+    forecastWorkspaceTitle: "空间预测工作台",
+    missionBriefTag: "任务摘要",
+    missionBriefTitle: "当前运行态势",
+    scenarioLabTag: "情景实验",
+    hotspotQueueTag: "热点清单",
     sourcePolicyTag: "数据源策略",
-    sentinel2SwitchTitle: "Sentinel-2 切换面板",
-    remoteSegmentationTag: "远程分割",
-    sam2StatusTitle: "SAM-2 执行状态",
-    hotspotWatchTag: "热点观察",
-    businessHotspotsTitle: "业务热点",
-    scenarioApiTag: "情景推演",
-    liveScenarioTitle: "实时情景运行",
-    presetLabel: "预设",
-    nodeIdsLabel: "节点 ID",
-    intensityLabel: "强度",
-    hopsLabel: "传播跳数",
-    attenuationLabel: "衰减系数",
-    temporalModeLabel: "时间模式",
-    runScenarioButton: "运行情景",
-    managementTag: "管理",
-    platformOverviewTitle: "平台概览",
-    modelRegistryTag: "模型登记",
-    modelMetricsTitle: "模型指标",
-    predictionSummaryTag: "预测摘要",
-    forecastBreakdownTitle: "预测拆解",
-    servicesTag: "服务",
-    architectureLayersTitle: "架构层级",
-    membersTag: "成员",
-    teamStatusTitle: "团队状态",
+    sentinel2SwitchTitle: "Sentinel-2 特征源治理",
+    segmentationTrackTag: "分割链路",
+    sam2StatusTitle: "远程 SAM-2 就绪情况",
+    platformStatusTag: "平台状态",
+    platformOverviewTitle: "执行状态与下一步动作",
+    forecastSummaryTag: "预测摘要",
+    forecastBreakdownTitle: "分步长预测概览",
+    labControlsTag: "实验控制",
+    labControlsTitle: "选择当前对比视图",
+    modelRegistryTag: "模型注册表",
+    modelMetricsTitle: "当前模型制品",
+    benchmarkDeckTag: "对比面板",
+    benchmarkDeckTitle: "领先者、追赶者与基线差距",
+    gapAnalysisTag: "差异分析",
+    gapAnalysisTitle: "图模型在哪里真正赢，哪里还没赢",
+    scenarioResponseTag: "情景响应",
+    scenarioResponseTitle: "参考情景敏感性",
+    commandBoardTag: "指挥面板",
+    commandBoardTitle: "当前执行状态",
+    dataInventoryTag: "数据盘点",
+    dataInventoryTitle: "已跟踪数据源与就绪度",
+    servicesTag: "服务层",
+    architectureLayersTitle: "服务边界与待补内容",
+    membersTag: "成员分工",
+    teamStatusTitle: "责任边界与剩余工作",
+    studyDesignTag: "研究设计",
+    studyDesignTitle: "研究区与训练目标",
     documentsTag: "文档",
-    projectReferencesTitle: "项目资料",
+    projectReferencesTitle: "关键参考与实现说明",
+    methodologyTag: "方法说明",
+    methodologyTitle: "数据血缘与科研约束",
     roadmapTag: "路线图",
-    nextStepsTitle: "下一步",
-    noCompare: "不对比",
-    auto: "自动",
-    prefer: "设为偏好",
-    preferred: "已偏好",
-    reserve: "预留",
-    ready: "已就绪",
-    waiting: "等待中",
-    yes: "是",
-    no: "否",
-    count: "数量",
-    minMax: "最小 / 最大",
-    mean: "均值",
-    target: "目标",
-    sentinelSource: "Sentinel-2 来源",
-    policy: "策略",
-    remoteJobs: "远程任务",
-    modelLeader: "当前领先模型",
-    sourceMode: "来源模式",
-    policyMode: "策略模式",
-    effectiveSource: "生效来源",
-    reason: "原因",
-    rows: "行数",
-    current: "当前使用",
-    latestBundle: "最新 bundle",
-    jobs: "任务数",
-    completion: "完成度",
-    csvRows: "CSV 行数",
-    nextAction: "下一步动作",
-    topHotspots: "热点节点",
-    positiveGap: "正向模型差异",
-    noGap: "当前无可用差异",
-    serviceSummary: "服务概况",
-    active: "已激活",
-    scaffolded: "已搭骨架",
-    pending: "待补齐",
-    dataSummary: "数据概况",
-    recommendedNext: "建议下一步",
-    hotspotDistribution: "热点分布",
-    critical: "关键",
-    high: "高",
-    elevated: "中",
-    stable: "稳定",
-    mae: "MAE",
-    rmse: "RMSE",
-    changedNodes: "变更节点",
-    deltaMean: "增量均值",
-    deltaMax: "增量最大值",
-    running: "运行中...",
-    scenarioUnavailable: "当前为回退模式，情景推演接口不可用。",
-    updateFailed: "数据源策略更新失败",
-    scenarioFailed: "情景推演运行失败",
-    low: "低",
-    highValue: "高",
-    panelMode: "面板模式",
-    noItems: "无数据",
-    cells: "网格数",
-    min: "最小",
-    max: "最大",
-    presetIndustrialExpansion: "工业扩张",
-    presetGreeningRestoration: "生态修复",
-    temporalLinear: "线性",
-    temporalUniform: "均匀",
-    temporalLast: "末步增强",
+    nextStepsTitle: "近期里程碑",
+    businessHotspotsTitle: "优先热点观察清单",
+    liveScenarioTitle: "在线情景推演",
   },
 };
 
+Object.assign(I18N.en, {
+  modelLabel: "Model",
+  compareLabel: "Compare",
+  horizonLabel: "Horizon",
+  presetLabel: "Preset",
+  nodeIdsLabel: "Node IDs",
+  intensityLabel: "Intensity",
+  hopsLabel: "Hops",
+  attenuationLabel: "Attenuation",
+  temporalModeLabel: "Temporal Mode",
+  forecastButton: "Forecast",
+  hotspotsButton: "Hotspots",
+  modelGapButton: "Model Gap",
+  scenarioDeltaButton: "Scenario Delta",
+  resetButton: "Reset",
+  runScenarioButton: "Run scenario",
+  mapFallback: "Cesium is unavailable in the current browser session. The rest of the platform remains usable.",
+  presetIndustrialExpansion: "Industrial expansion",
+  presetGreeningRestoration: "Greening restoration",
+  temporalLinear: "Linear",
+  temporalUniform: "Uniform",
+  temporalLast: "Last-step boost",
+  studyArea: "Study area",
+  timeRange: "Time range",
+  targetName: "Target",
+  activeSource: "Active source",
+  sourceMode: "Source mode",
+  modelLeader: "Model leader",
+  bestRmse: "Best RMSE",
+  bestMae: "Best MAE",
+  trackedNodes: "Tracked nodes",
+  remoteJobs: "Remote jobs",
+  completion: "Completion",
+  nextAction: "Next action",
+  noCompare: "No compare",
+  policyMode: "Policy mode",
+  effectiveSource: "Effective source",
+  effectiveReason: "Effective reason",
+  rows: "Rows",
+  owner: "Owner",
+  status: "Status",
+  horizon: "Horizon",
+  bestValLoss: "Best val loss",
+  min: "Min",
+  max: "Max",
+  mean: "Mean",
+  count: "Count",
+  cells: "Cells",
+  active: "Active",
+  scaffolded: "Scaffolded",
+  pendingFill: "Pending fill",
+  remoteOnly: "Remote only",
+  ready: "Ready",
+  waiting: "Waiting",
+  available: "Available",
+  unavailable: "Unavailable",
+  yes: "Yes",
+  no: "No",
+  critical: "Critical",
+  high: "High",
+  elevated: "Elevated",
+  stable: "Stable",
+  auto: "Auto",
+  manual: "Manual",
+  autoFallback: "Auto fallback",
+  quarterlyProxy: "Quarterly proxy",
+  sam2Remote: "SAM-2 remote",
+  switchToAuto: "Switch to auto",
+  preferQuarterlyProxy: "Prefer quarterly proxy",
+  preferSam2Remote: "Prefer SAM-2 remote",
+  liveApiMode: "Live API mode",
+  fallbackMode: "Fallback mode",
+  selectedHorizon: "Selected horizon",
+  topHotspots: "Top hotspots",
+  positiveGap: "Positive gap",
+  negativeGap: "Negative gap",
+  changedNodes: "Changed nodes",
+  deltaMean: "Delta mean",
+  deltaMax: "Delta max",
+  running: "Running...",
+  scenarioUnavailable: "Scenario API is unavailable in fallback mode.",
+  updateFailed: "Source policy update failed.",
+  scenarioFailed: "Scenario run failed.",
+  methodologyNoteOne: "Quarterly prototype focused on integration and method validation.",
+  methodologyNoteTwo: "Sentinel-2 will switch from proxy features to remote SAM-2 outputs.",
+  methodologyNoteThree: "ERA5, EDGAR, and QC-filtered GPP labels already feed the current model.",
+  methodologyNoteFour: "Real SAM-2 stays remote because this laptop is not suited for stable batch segmentation.",
+});
+
+Object.assign(I18N.zh, {
+  modelLabel: "模型",
+  compareLabel: "对比模型",
+  horizonLabel: "预测步长",
+  presetLabel: "预设情景",
+  nodeIdsLabel: "节点 ID",
+  intensityLabel: "强度",
+  hopsLabel: "传播跳数",
+  attenuationLabel: "衰减系数",
+  temporalModeLabel: "时间传播模式",
+  forecastButton: "预测值",
+  hotspotsButton: "热点等级",
+  modelGapButton: "模型差值",
+  scenarioDeltaButton: "情景增量",
+  resetButton: "重置",
+  runScenarioButton: "运行情景",
+  mapFallback: "当前浏览器会话无法加载 Cesium，平台其余功能仍可正常使用。",
+  presetIndustrialExpansion: "工业扩张",
+  presetGreeningRestoration: "生态修复",
+  temporalLinear: "线性扩散",
+  temporalUniform: "均匀扩散",
+  temporalLast: "末步增强",
+  studyArea: "研究区",
+  timeRange: "时间范围",
+  targetName: "目标变量",
+  activeSource: "当前特征源",
+  sourceMode: "数据源模式",
+  modelLeader: "当前领先模型",
+  bestRmse: "最佳 RMSE",
+  bestMae: "最佳 MAE",
+  trackedNodes: "网格节点数",
+  remoteJobs: "远程任务数",
+  completion: "完成率",
+  nextAction: "下一步动作",
+  noCompare: "不对比",
+  policyMode: "策略模式",
+  effectiveSource: "实际生效源",
+  effectiveReason: "生效原因",
+  rows: "行数",
+  owner: "负责人",
+  status: "状态",
+  horizon: "步长类型",
+  bestValLoss: "最佳验证损失",
+  min: "最小值",
+  max: "最大值",
+  mean: "均值",
+  count: "数量",
+  cells: "单元数",
+  active: "运行中",
+  scaffolded: "已搭骨架",
+  pendingFill: "待补全",
+  remoteOnly: "仅远程执行",
+  ready: "已就绪",
+  waiting: "待完成",
+  available: "可用",
+  unavailable: "不可用",
+  yes: "是",
+  no: "否",
+  critical: "极高",
+  high: "高",
+  elevated: "中",
+  stable: "稳定",
+  auto: "自动",
+  manual: "手动",
+  autoFallback: "自动回退",
+  quarterlyProxy: "季度代理特征",
+  sam2Remote: "远程 SAM-2 特征",
+  switchToAuto: "切回自动策略",
+  preferQuarterlyProxy: "优先季度代理",
+  preferSam2Remote: "优先 SAM-2",
+  liveApiMode: "在线接口模式",
+  fallbackMode: "本地回退模式",
+  selectedHorizon: "当前步长",
+  topHotspots: "热点节点",
+  positiveGap: "正向优势",
+  negativeGap: "负向差距",
+  changedNodes: "变化节点",
+  deltaMean: "平均增量",
+  deltaMax: "最大增量",
+  running: "运行中...",
+  scenarioUnavailable: "当前处于回退模式，无法调用在线情景接口。",
+  updateFailed: "更新数据源策略失败。",
+  scenarioFailed: "情景运行失败。",
+  methodologyNoteOne: "当前季度版原型更偏向平台联调和方法验证。",
+  methodologyNoteTwo: "Sentinel-2 将从代理特征切换到远程 SAM-2 输出。",
+  methodologyNoteThree: "ERA5、EDGAR 和质量过滤后的 GPP 标签已经接入当前模型。",
+  methodologyNoteFour: "真实 SAM-2 保持远程执行，因为这台笔记本不适合稳定批处理分割。",
+});
+
 const state = {
+  page: document.body.dataset.page || "overview",
+  language: (() => {
+    const saved = window.localStorage.getItem("spatio_eco_lang");
+    if (saved === "zh" || saved === "en") return saved;
+    return String(navigator.language || "").toLowerCase().startsWith("zh") ? "zh" : "en";
+  })(),
   apiAvailable: true,
+  eventsBound: false,
   dashboard: null,
   platformStatus: null,
   sourcePolicy: null,
@@ -264,38 +377,60 @@ const state = {
   predictionPayload: null,
   predictionLayer: null,
   analytics: null,
-  deltaItems: null,
+  deltaItems: [],
+  scenarioSummary: null,
+  scenarioName: null,
   viewer: null,
   mapMode: "forecast",
-  language: (() => {
-    const saved = window.localStorage.getItem("spatio_eco_lang");
-    if (saved === "zh" || saved === "en") return saved;
-    return String(navigator.language || "").toLowerCase().startsWith("zh") ? "zh" : "en";
-  })(),
+  selectedModel: null,
+  compareModel: null,
+  selectedHorizon: null,
 };
 
-const e = (id) => document.getElementById(id);
+const el = (id) => document.getElementById(id);
+const has = (id) => Boolean(el(id));
+const t = (key) => I18N[state.language]?.[key] || I18N.en[key] || key;
 const locale = () => (state.language === "zh" ? "zh-CN" : "en-US");
-const t = (key) => (I18N[state.language] && I18N[state.language][key]) || I18N.en[key] || key;
-const has = (id) => Boolean(e(id));
 
-function fmt(value, digits = 4) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "n/a";
-  return n.toFixed(digits);
+function setHTML(id, html) {
+  if (has(id)) el(id).innerHTML = html;
+}
+
+function esc(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function nice(value) {
+  return String(value ?? "").replace(/_/g, " ");
 }
 
 function compact(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "n/a";
   if (Math.abs(n) >= 1000) return n.toLocaleString(locale(), { maximumFractionDigits: 2 });
-  if (Math.abs(n) >= 1) return n.toFixed(3);
-  if (Math.abs(n) >= 0.01) return n.toFixed(5);
+  if (Math.abs(n) >= 1) return n.toLocaleString(locale(), { maximumFractionDigits: 3 });
+  if (Math.abs(n) >= 0.01) return n.toLocaleString(locale(), { maximumFractionDigits: 5 });
   return n.toExponential(2);
 }
 
-function nice(text) {
-  return String(text || "").replace(/_/g, " ");
+function percent(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? `${(n * 100).toFixed(1)}%` : "n/a";
+}
+
+function query(base, params) {
+  const url = new URL(base, window.location.href);
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== "") {
+      url.searchParams.set(key, String(value));
+    }
+  });
+  return url.toString();
 }
 
 async function fetchJson(url, options = {}) {
@@ -312,672 +447,595 @@ async function loadDashboard() {
   }
 }
 
-async function loadOptional(url, fallbackValue) {
+async function loadOptional(url, fallback) {
   try {
     return await fetchJson(url);
   } catch {
-    return fallbackValue;
+    return fallback;
   }
 }
 
-function sourcePolicyFallback(dashboard) {
-  const sentinel2 = dashboard.data_sources.sentinel2_switch;
-  return {
-    policy: { mode: "auto", preferred_source_key: null, updated_at: null },
-    effective_mode: "auto",
-    effective_reason: "fallback_mock",
-    active_key: sentinel2.active_key,
-    active_name: sentinel2.active_name,
-    active_path: sentinel2.active_path,
-    options: sentinel2.items,
-  };
+function statusText(status) {
+  const value = String(status || "").toLowerCase();
+  if (value === "pending_fill") return t("pendingFill");
+  if (value === "remote_only") return t("remoteOnly");
+  if (value === "auto_fallback") return t("autoFallback");
+  return t(value) || nice(status);
 }
 
-function segmentationFallback(dashboard) {
-  return dashboard.data_sources.segmentation_remote;
+function statusTone(status) {
+  const value = String(status || "").toLowerCase();
+  if (["active", "ready", "available"].includes(value)) return "good";
+  if (["critical"].includes(value)) return "risk";
+  if (["scaffolded", "high", "elevated"].includes(value)) return "warn";
+  return "muted";
 }
 
-function platformFallback(dashboard) {
-  return (
-    dashboard.management || {
-      service_summary: { total: dashboard.architecture.length, active: 2, scaffolded: 2, pending_fill: 2 },
-      data_summary: {
-        ready_data_count: dashboard.data_sources.items.length,
-        tracked_data_count: dashboard.data_sources.items.length,
-        active_sentinel2_source: dashboard.data_sources.sentinel2_switch.active_key,
-        effective_source_mode: "auto",
-      },
-      model_summary: {
-        count: dashboard.models.length,
-        leader_key: dashboard.default_models.multi_step,
-        leader_rmse: dashboard.models[1].metrics.rmse,
-        leader_mae: dashboard.models[1].metrics.mae,
-      },
-      segmentation_summary: {
-        job_count: dashboard.data_sources.segmentation_remote.latest_bundle_job_count || 0,
-        complete_scene_count: 0,
-        completion_rate: 0,
-        sam2_feature_ready: false,
-        next_action: "wait_for_remote_results",
-      },
-      recommendations: dashboard.roadmap,
-    }
-  );
+function sourceName(key) {
+  if (key === "quarterly_proxy") return t("quarterlyProxy");
+  if (key === "sam2_remote") return t("sam2Remote");
+  return nice(key);
 }
 
-function applyStaticText() {
-  document.title = t("documentTitle");
-  document.documentElement.lang = state.language === "zh" ? "zh-CN" : "en";
-  document.querySelectorAll("[data-i18n]").forEach((node) => {
-    node.textContent = t(node.dataset.i18n);
-  });
-  document.querySelectorAll("[data-page-link]").forEach((node) => {
-    node.classList.toggle("is-active", node.dataset.pageLink === document.body.dataset.page);
-  });
-  if (has("lang-zh")) e("lang-zh").classList.toggle("is-active", state.language === "zh");
-  if (has("lang-en")) e("lang-en").classList.toggle("is-active", state.language === "en");
-
-  const preset = document.querySelector('select[name="preset"]');
-  if (preset) {
-    Array.from(preset.options).forEach((option) => {
-      if (option.value === "industrial_expansion") option.textContent = t("presetIndustrialExpansion");
-      if (option.value === "greening_restoration") option.textContent = t("presetGreeningRestoration");
-    });
-  }
-  const temporal = document.querySelector('select[name="temporal_mode"]');
-  if (temporal) {
-    Array.from(temporal.options).forEach((option) => {
-      if (option.value === "linear") option.textContent = t("temporalLinear");
-      if (option.value === "uniform") option.textContent = t("temporalUniform");
-      if (option.value === "last") option.textContent = t("temporalLast");
-    });
-  }
+function pill(text, tone = "neutral") {
+  return `<span class="pill pill--${tone}">${esc(text)}</span>`;
 }
 
-function setLanguage(language) {
-  if (!["zh", "en"].includes(language) || language === state.language) return;
-  state.language = language;
-  window.localStorage.setItem("spatio_eco_lang", language);
-  applyStaticText();
-  if (state.dashboard) renderAll();
+function fact(label, value, detail = "", tone = "neutral") {
+  return `<article class="fact-card fact-card--${tone}"><span>${esc(label)}</span><strong>${esc(value)}</strong>${detail ? `<p>${esc(detail)}</p>` : ""}</article>`;
 }
 
-function renderHero() {
-  if (!has("project-phase") || !has("hero-meta") || !has("hero-stack")) return;
-  const project = state.dashboard.project;
-  const sourcePolicy = state.sourcePolicy;
-  e("project-phase").textContent = `${project.phase} / ${project.study_area.status}`;
-  e("hero-meta").innerHTML = `
-    <span class="hero-chip">${project.study_area.name}</span>
-    <span class="hero-chip">${project.study_area.node_count} grid cells</span>
-    <span class="hero-chip">${project.study_area.time_granularity}</span>
-    <span class="hero-chip">${project.study_area.time_range.join(" to ")}</span>
-  `;
-  e("hero-stack").innerHTML = `
-    <div class="hero-kv"><span>${t("target")}</span><strong>${project.study_area.current_target}</strong></div>
-    <div class="hero-kv"><span>${t("sentinelSource")}</span><strong>${sourcePolicy.active_name}</strong></div>
-    <div class="hero-kv"><span>${t("policy")}</span><strong>${sourcePolicy.policy.mode} / ${sourcePolicy.effective_mode}</strong></div>
-  `;
+function item({ eyebrow = "", title = "", meta = "", body = "", tone = "neutral", footer = "" }) {
+  return `<article class="stack-item stack-item--${tone}">${eyebrow ? `<p class="item-eyebrow">${esc(eyebrow)}</p>` : ""}<div class="item-head"><h3>${esc(title)}</h3>${meta ? `<span class="item-meta">${esc(meta)}</span>` : ""}</div>${body ? `<p class="item-body">${esc(body)}</p>` : ""}${footer ? `<div class="item-footer">${footer}</div>` : ""}</article>`;
 }
 
-function renderMetricsStrip() {
-  if (!has("metrics-strip")) return;
-  const dashboard = state.dashboard;
-  const platformStatus = state.platformStatus;
-  const segmentation = state.segmentationOverview;
-  const tiles = [
-    { label: t("modelLeader"), value: platformStatus.model_summary.leader_key, detail: `RMSE ${fmt(platformStatus.model_summary.leader_rmse, 5)}` },
-    { label: t("sourceMode"), value: platformStatus.data_summary.effective_source_mode, detail: dashboard.data_sources.sentinel2_switch.active_key },
-    { label: t("remoteJobs"), value: segmentation.job_count || 0, detail: `${t("completion")}: ${Math.round((segmentation.completion_rate || 0) * 100)}%` },
-    { label: t("modelLabel"), value: dashboard.default_models.multi_step, detail: dashboard.project.study_area.name },
-  ];
-  e("metrics-strip").innerHTML = tiles
-    .map(
-      (tile) => `
-        <article class="metric-tile">
-          <span>${tile.label}</span>
-          <strong>${tile.value}</strong>
-          <p>${tile.detail}</p>
-        </article>
-      `,
-    )
-    .join("");
+function metric(label, value, detail, tone = "teal") {
+  return `<article class="metric-tile metric-tile--${tone}"><span>${esc(label)}</span><strong>${esc(value)}</strong><p>${esc(detail)}</p></article>`;
 }
 
-function renderSourcePolicyPanel() {
-  if (!has("source-policy-summary") || !has("source-policy-grid")) return;
-  const sourcePolicy = state.sourcePolicy;
-  e("source-policy-summary").innerHTML = `
-    <div class="hero-kv policy-kv"><span>${t("policyMode")}</span><strong>${sourcePolicy.policy.mode}</strong></div>
-    <div class="hero-kv policy-kv"><span>${t("effectiveSource")}</span><strong>${sourcePolicy.active_name}</strong></div>
-    <div class="hero-kv policy-kv"><span>${t("reason")}</span><strong>${nice(sourcePolicy.effective_reason)}</strong></div>
-  `;
-  e("source-policy-grid").innerHTML = sourcePolicy.options
-    .map((item) => {
-      const isPreferred = sourcePolicy.policy.preferred_source_key === item.key;
-      const isActive = sourcePolicy.active_key === item.key;
-      const buttonLabel = item.key === "sam2_remote" && !item.available ? t("reserve") : isPreferred ? t("preferred") : t("prefer");
-      return `
-        <article class="mini-card">
-          <div class="section-head">
-            <h3>${item.name}</h3>
-            <span class="status-pill ${item.available ? "active" : "pending_fill"}">${item.available ? t("ready") : t("waiting")}</span>
-          </div>
-          <p>${item.description}</p>
-          <p><strong>${t("rows")}:</strong> ${item.rows}</p>
-          <p><strong>${t("current")}:</strong> ${isActive ? t("yes") : t("no")}</p>
-          <p class="path-text">${item.path}</p>
-          <div class="button-row">
-            <button class="inline-button ${isPreferred ? "selected" : ""}" data-source-mode="manual" data-source-key="${item.key}" type="button">${buttonLabel}</button>
-            <button class="inline-button ghost" data-source-mode="auto" type="button">${t("auto")}</button>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function renderSegmentationStatus() {
-  if (!has("segmentation-status")) return;
-  const item = state.segmentationOverview;
-  e("segmentation-status").innerHTML = `
-    <article class="mini-card">
-      <div class="section-head">
-        <h3>Remote bundle</h3>
-        <span class="status-pill ${item.job_count ? "active" : "pending_fill"}">${item.job_count ? t("ready") : t("waiting")}</span>
-      </div>
-      <p><strong>${t("latestBundle")}:</strong> ${item.latest_bundle_dir || "not exported yet"}</p>
-      <p><strong>${t("jobs")}:</strong> ${item.job_count || 0}</p>
-      <p><strong>${t("completion")}:</strong> ${Math.round((item.completion_rate || 0) * 100)}%</p>
-    </article>
-    <article class="mini-card">
-      <div class="section-head">
-        <h3>SAM-2</h3>
-        <span class="status-pill ${item.sam2_feature_ready ? "active" : "pending_fill"}">${item.sam2_feature_ready ? t("ready") : t("pending")}</span>
-      </div>
-      <p><strong>${t("csvRows")}:</strong> ${item.sam2_feature_rows || 0}</p>
-      <p><strong>${t("nextAction")}:</strong> ${nice(item.next_action)}</p>
-      <p class="path-text">${item.sam2_feature_path || ""}</p>
-    </article>
-  `;
-}
-
-function renderHotspotList() {
-  if (!has("hotspot-list") || !state.analytics) return;
-  const summary = state.analytics.summary;
-  e("hotspot-list").innerHTML = `
-    <article class="mini-card">
-      <div class="section-head">
-        <h3>${t("topHotspots")}</h3>
-        <span class="status-pill active">${state.analytics.horizon}</span>
-      </div>
-      <ul class="compact-list">
-        ${(summary.top_hotspots || []).map((item) => `<li>node ${item.node_id}<strong>${compact(item.value)}</strong></li>`).join("")}
-      </ul>
-    </article>
-    <article class="mini-card">
-      <div class="section-head">
-        <h3>${t("positiveGap")}</h3>
-        <span class="status-pill active">${state.analytics.compare_model_key || "none"}</span>
-      </div>
-      <ul class="compact-list">
-        ${
-          (summary.top_positive_gap || []).length
-            ? summary.top_positive_gap.map((item) => `<li>node ${item.node_id}<strong>${compact(item.value)}</strong></li>`).join("")
-            : `<li>${t("noGap")}</li>`
-        }
-      </ul>
-    </article>
-  `;
-}
-
-function renderManagement() {
-  if (!has("management-grid")) return;
-  const p = state.platformStatus;
-  e("management-grid").innerHTML = `
-    <article class="mini-card">
-      <div class="section-head"><h3>${t("serviceSummary")}</h3><span class="status-pill active">${p.service_summary.total}</span></div>
-      <p><strong>${t("active")}:</strong> ${p.service_summary.active}</p>
-      <p><strong>${t("scaffolded")}:</strong> ${p.service_summary.scaffolded}</p>
-      <p><strong>${t("pending")}:</strong> ${p.service_summary.pending_fill}</p>
-    </article>
-    <article class="mini-card">
-      <div class="section-head"><h3>${t("dataSummary")}</h3><span class="status-pill active">${p.data_summary.ready_data_count}/${p.data_summary.tracked_data_count}</span></div>
-      <p><strong>${t("sentinelSource")}:</strong> ${p.data_summary.active_sentinel2_source}</p>
-      <p><strong>${t("sourceMode")}:</strong> ${p.data_summary.effective_source_mode}</p>
-    </article>
-    <article class="mini-card">
-      <div class="section-head"><h3>${t("modelLeader")}</h3><span class="status-pill active">${p.model_summary.leader_key}</span></div>
-      <p><strong>${t("mae")}:</strong> ${fmt(p.model_summary.leader_mae, 5)}</p>
-      <p><strong>${t("rmse")}:</strong> ${fmt(p.model_summary.leader_rmse, 5)}</p>
-    </article>
-    <article class="mini-card">
-      <div class="section-head"><h3>${t("recommendedNext")}</h3><span class="status-pill pending_fill">${nice(p.segmentation_summary.next_action)}</span></div>
-      <ul class="compact-list">${(p.recommendations || []).map((item) => `<li>${item}</li>`).join("")}</ul>
-    </article>
-  `;
-}
-
-function renderModels() {
-  if (!has("model-grid")) return;
-  e("model-grid").innerHTML = state.dashboard.models
-    .map((item) => {
-      const defaults = state.dashboard.default_models;
-      const isDefault = item.key === defaults.single_step || item.key === defaults.multi_step;
-      return `
-        <article class="model-card">
-          <div class="section-head"><h3>${item.name}</h3><span class="status-pill active">${item.horizon}</span></div>
-          <p>${item.owner} / ${item.stage}${isDefault ? " / default" : ""}</p>
-          <div class="metric-row">
-            <div class="metric-chip"><span>${t("mae")}</span><strong>${fmt(item.metrics.mae, 5)}</strong></div>
-            <div class="metric-chip"><span>${t("rmse")}</span><strong>${fmt(item.metrics.rmse, 5)}</strong></div>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function buildPredictionPreview(payload) {
+function summaryFromPayload(payload) {
+  if (!payload) return null;
+  const horizons = payload.predictions_by_horizon || (payload.predictions ? { [payload.prediction_timestamp_to || "latest"]: payload.predictions } : {});
   const byHorizon = {};
-  const horizons = payload.predictions_by_horizon || {};
   Object.entries(horizons).forEach(([horizon, nodeMap]) => {
-    const values = Object.values(nodeMap).map(Number);
-    const topNodes = Object.entries(nodeMap)
-      .map(([nodeId, value]) => ({ node_id: nodeId, value: Number(value) }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5);
+    const values = Object.values(nodeMap || {}).map(Number).filter(Number.isFinite);
+    const mean = values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
     byHorizon[horizon] = {
       count: values.length,
       min: values.length ? Math.min(...values) : 0,
       max: values.length ? Math.max(...values) : 0,
-      mean: values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0,
-      top_nodes: topNodes,
+      mean,
+      top_nodes: Object.entries(nodeMap || {})
+        .map(([nodeId, value]) => ({ node_id: nodeId, value: Number(value) }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 3),
     };
   });
-  return { by_horizon: byHorizon };
+  return { forecast_timestamps: payload.forecast_timestamps || Object.keys(byHorizon), by_horizon: byHorizon };
+}
+
+function renderStaticText() {
+  document.documentElement.lang = state.language === "zh" ? "zh-CN" : "en";
+  document.title = `${t("documentTitle")} | ${t({ overview: "navOverview", models: "navModels", operations: "navOperations", research: "navResearch" }[state.page])}`;
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  el("lang-zh")?.classList.toggle("is-active", state.language === "zh");
+  el("lang-en")?.classList.toggle("is-active", state.language === "en");
+}
+
+function renderHero() {
+  if (!state.dashboard) return;
+  const study = state.dashboard.project?.study_area || {};
+  setHTML(
+    "hero-meta",
+    [
+      `${t("studyArea")}: ${study.name || "n/a"}`,
+      `${t("timeRange")}: ${(study.time_range || []).join(" to ")}`,
+      `${t("targetName")}: ${nice(study.current_target || "")}`,
+      `${t("activeSource")}: ${sourceName(state.dashboard.data_sources?.sentinel2_switch?.active_key)}`,
+      state.apiAvailable ? t("liveApiMode") : t("fallbackMode"),
+    ].map((value) => `<span class="hero-chip">${esc(value)}</span>`).join(""),
+  );
+  if (has("project-phase")) el("project-phase").textContent = state.dashboard.project?.phase || "Platform MVP";
+  const leader = state.platformStatus?.model_summary || {};
+  const segmentation = state.segmentationOverview || {};
+  setHTML(
+    "hero-stack",
+    [
+      { label: t("platformPhaseLabel"), value: state.dashboard.project?.phase || "Platform MVP" },
+      { label: t("modelLeader"), value: leader.leader_name || "n/a" },
+      { label: t("activeSource"), value: sourceName(state.dashboard.data_sources?.sentinel2_switch?.active_key) },
+      { label: t("remoteJobs"), value: String(segmentation.job_count || 0) },
+    ].map((row) => `<div class="hero-kv"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong></div>`).join(""),
+  );
+}
+
+function renderMetrics() {
+  if (!state.dashboard || !state.platformStatus) return;
+  const study = state.dashboard.project?.study_area || {};
+  const leader = state.platformStatus.model_summary || {};
+  const segmentation = state.segmentationOverview || {};
+  const hotspots = state.analytics?.summary?.top_hotspots || state.dashboard.business_preview?.summary?.top_hotspots || [];
+  setHTML("metrics-strip", [
+    metric(t("modelLeader"), leader.leader_name || "n/a", `${t("bestRmse")}: ${compact(leader.leader_rmse)}`, "teal"),
+    metric(t("trackedNodes"), String(study.node_count || 0), `${t("timeRange")}: ${(study.time_range || []).join(" to ")}`, "ink"),
+    metric(t("activeSource"), sourceName(state.dashboard.data_sources?.sentinel2_switch?.active_key), `${t("sourceMode")}: ${statusText(state.dashboard.data_sources?.sentinel2_switch?.effective_mode)}`, "burnt"),
+    metric(t("topHotspots"), String(hotspots.length), `${t("completion")}: ${percent(segmentation.completion_rate || 0)}`, "olive"),
+  ].join(""));
+}
+
+function renderOverviewStory() {
+  if (!has("overview-story") || !state.platformStatus) return;
+  const leader = state.platformStatus.model_summary || {};
+  const segmentation = state.segmentationOverview || {};
+  setHTML("overview-story", [
+    fact(t("modelLeader"), leader.leader_name || "n/a", `${t("bestRmse")}: ${compact(leader.leader_rmse)}`, "good"),
+    fact(t("activeSource"), sourceName(state.dashboard.data_sources?.sentinel2_switch?.active_key), `${t("policyMode")}: ${statusText(state.dashboard.data_sources?.sentinel2_switch?.effective_mode)}`, "warn"),
+    fact(t("selectedHorizon"), state.selectedHorizon || state.analytics?.horizon || "n/a", `${t("compareLabel")}: ${(state.dashboard.models || []).find((model) => model.key === state.compareModel)?.name || t("noCompare")}`, "ink"),
+    fact(t("nextAction"), segmentation.next_action || "n/a", `${t("rows")}: ${segmentation.sam2_feature_rows || 0}`, "muted"),
+  ].join(""));
+}
+
+function renderSourcePolicy() {
+  if (!state.sourcePolicy) return;
+  const options = state.sourcePolicy.options || [];
+  setHTML("source-policy-summary", `<div class="policy-summary-card"><div class="policy-meta-grid">${fact(t("policyMode"), statusText(state.sourcePolicy.policy?.mode || state.sourcePolicy.effective_mode), "", "good")}${fact(t("effectiveSource"), sourceName(state.sourcePolicy.active_key), "", "ink")}${fact(t("effectiveReason"), nice(state.sourcePolicy.effective_reason), "", "warn")}</div><div class="button-row"><button class="inline-button ${state.sourcePolicy.policy?.mode === "auto" ? "selected" : ""}" data-source-mode="auto">${esc(t("switchToAuto"))}</button><button class="inline-button ${state.sourcePolicy.policy?.preferred_source_key === "quarterly_proxy" ? "selected" : ""}" data-source-mode="manual" data-preferred-source="quarterly_proxy">${esc(t("preferQuarterlyProxy"))}</button><button class="inline-button ${state.sourcePolicy.policy?.preferred_source_key === "sam2_remote" ? "selected" : ""}" data-source-mode="manual" data-preferred-source="sam2_remote">${esc(t("preferSam2Remote"))}</button></div></div>`);
+  setHTML("source-policy-grid", options.map((option) => item({
+    eyebrow: `${t("rows")}: ${option.rows ?? 0}`,
+    title: sourceName(option.key),
+    meta: option.available ? t("available") : t("unavailable"),
+    body: option.description || "",
+    tone: option.key === state.sourcePolicy.active_key ? "good" : (option.available ? "warn" : "muted"),
+    footer: `${pill(option.stage || "", "muted")} ${pill(`${t("rows")}: ${option.rows ?? 0}`, "neutral")}`,
+  })).join(""));
+}
+
+function renderSegmentation() {
+  if (!has("segmentation-status") || !state.segmentationOverview) return;
+  const info = state.segmentationOverview;
+  setHTML("segmentation-status", [
+    item({ eyebrow: t("remoteJobs"), title: String(info.job_count || 0), meta: `${t("completion")}: ${percent(info.completion_rate || 0)}`, body: `${t("nextAction")}: ${info.next_action || "n/a"}`, tone: info.sam2_feature_ready ? "good" : "warn" }),
+    item({ eyebrow: "Bundle", title: info.latest_bundle_dir ? info.latest_bundle_dir.split(/[\\/]/).pop() : "n/a", meta: `${t("rows")}: ${info.sam2_feature_rows || 0}`, body: info.sam2_feature_path || "", tone: info.latest_bundle_dir ? "ink" : "muted" }),
+    item({ eyebrow: "CSV", title: info.sam2_feature_ready ? t("ready") : t("waiting"), meta: `${t("count")}: ${info.complete_scene_count || 0}`, body: info.import_summary_path || "", tone: info.sam2_feature_ready ? "good" : "muted" }),
+  ].join(""));
+}
+
+function renderHotspots() {
+  if (!has("hotspot-list")) return;
+  const list = state.analytics?.summary?.top_hotspots || [];
+  setHTML("hotspot-list", (list.length ? list.slice(0, 6) : [{ node_id: "n/a", value: 0 }]).map((row, index) => {
+    const detail = (state.analytics?.items || []).find((item) => String(item.node_id) === String(row.node_id));
+    return item({
+      eyebrow: `#${index + 1}`,
+      title: `Node ${row.node_id}`,
+      meta: detail ? statusText(detail.risk_level) : t("stable"),
+      body: `${t("targetName")}: ${compact(row.value)}`,
+      tone: detail ? statusTone(detail.risk_level) : "muted",
+    });
+  }).join(""));
+}
+
+function renderManagement() {
+  if (!has("management-grid") || !state.platformStatus) return;
+  const info = state.platformStatus;
+  const cards = [
+    fact(t("servicesTag"), `${info.service_summary?.active || 0}/${info.service_summary?.total || 0}`, `${t("scaffolded")}: ${info.service_summary?.scaffolded || 0}`, "good"),
+    fact(t("dataInventoryTag"), `${info.data_summary?.ready_data_count || 0}/${info.data_summary?.tracked_data_count || 0}`, `${t("effectiveSource")}: ${sourceName(info.data_summary?.active_sentinel2_source)}`, "ink"),
+    fact(t("modelLeader"), info.model_summary?.leader_name || "n/a", `${t("bestMae")}: ${compact(info.model_summary?.leader_mae)}`, "warn"),
+    fact("SAM-2", info.segmentation_summary?.sam2_feature_ready ? t("ready") : t("waiting"), `${t("completion")}: ${percent(info.segmentation_summary?.completion_rate || 0)}`, "muted"),
+  ].join("");
+  const notes = (info.recommendations || []).map((text) => `<li>${esc(text)}</li>`).join("");
+  setHTML("management-grid", `<div class="story-grid">${cards}</div><div class="note-card"><ul class="compact-list">${notes}</ul></div>`);
 }
 
 function renderPredictionSummary() {
-  if (!has("prediction-grid") || !state.analytics) return;
-  const preview = state.predictionPayload ? buildPredictionPreview(state.predictionPayload) : state.dashboard.prediction_preview;
-  const cards = Object.entries(preview.by_horizon || {})
-    .map(
-      ([timestamp, stats]) => `
-        <article class="forecast-card">
-          <h3>${timestamp}</h3>
-          <p>${t("count")}: ${stats.count}</p>
-          <p>${t("minMax")}: ${compact(stats.min)} / ${compact(stats.max)}</p>
-          <p>${t("mean")}: ${compact(stats.mean)}</p>
-          <ul class="compact-list">${stats.top_nodes.map((node) => `<li>node ${node.node_id}<strong>${compact(node.value)}</strong></li>`).join("")}</ul>
-        </article>
-      `,
-    )
-    .join("");
-  const hotspot = state.analytics.summary.category_counts;
-  e("prediction-grid").innerHTML = `
-    ${cards}
-    <article class="forecast-card">
-      <h3>${t("hotspotDistribution")}</h3>
-      <p>${t("critical")}: ${hotspot.critical}</p>
-      <p>${t("high")}: ${hotspot.high}</p>
-      <p>${t("elevated")}: ${hotspot.elevated}</p>
-      <p>${t("stable")}: ${hotspot.stable}</p>
+  if (!has("prediction-grid")) return;
+  const summary = state.predictionPayload ? summaryFromPayload(state.predictionPayload) : state.dashboard?.prediction_preview;
+  if (!summary) return;
+  setHTML("prediction-grid", Object.entries(summary.by_horizon || {}).map(([horizon, data]) => item({
+    eyebrow: horizon,
+    title: `${t("count")}: ${data.count || 0}`,
+    meta: `${t("mean")}: ${compact(data.mean)}`,
+    body: `${t("min")}: ${compact(data.min)} | ${t("max")}: ${compact(data.max)}`,
+    tone: horizon === (state.selectedHorizon || summary.forecast_timestamps?.[0]) ? "good" : "neutral",
+    footer: (data.top_nodes || []).map((node) => pill(`Node ${node.node_id}: ${compact(node.value)}`, "muted")).join(""),
+  })).join(""));
+}
+
+function renderModels() {
+  if (!has("model-grid") || !state.dashboard) return;
+  setHTML("model-grid", [...(state.dashboard.models || [])].sort((a, b) => Number(a.metrics?.rmse || 0) - Number(b.metrics?.rmse || 0)).map((model) => `
+    <article class="model-card">
+      <div class="item-head">
+        <h3>${esc(model.name)}</h3>
+        ${pill(statusText(model.stage), model.stage === "baseline" ? "muted" : "good")}
+      </div>
+      <div class="metric-row">
+        ${pill(`${t("bestRmse")}: ${compact(model.metrics?.rmse)}`, "good")}
+        ${pill(`${t("bestMae")}: ${compact(model.metrics?.mae)}`, "warn")}
+        ${pill(`${t("horizon")}: ${nice(model.horizon)}`, "neutral")}
+      </div>
+      <p class="item-body">${esc(`${t("owner")}: ${model.owner} | ${t("bestValLoss")}: ${compact(model.best_val_loss)}`)}</p>
     </article>
-  `;
+  `).join(""));
+}
+
+function renderModelLabSummary() {
+  if (!has("model-lab-summary") || !state.platformStatus) return;
+  const leader = state.platformStatus.model_summary || {};
+  const selected = (state.dashboard.models || []).find((model) => model.key === state.selectedModel);
+  const compare = (state.dashboard.models || []).find((model) => model.key === state.compareModel);
+  setHTML("model-lab-summary", [
+    fact(t("modelLeader"), leader.leader_name || "n/a", `${t("bestRmse")}: ${compact(leader.leader_rmse)}`, "good"),
+    fact(t("modelLabel"), selected?.name || "n/a", `${t("selectedHorizon")}: ${state.selectedHorizon || "n/a"}`, "ink"),
+    fact(t("compareLabel"), compare?.name || t("noCompare"), compare ? `${t("bestRmse")}: ${compact(compare.metrics?.rmse)}` : "", "warn"),
+    fact(t("topHotspots"), String(state.analytics?.summary?.top_hotspots?.length || 0), "", "muted"),
+  ].join(""));
+}
+
+function renderBenchmark() {
+  if (!has("benchmark-grid") || !state.dashboard) return;
+  const models = [...(state.dashboard.models || [])].sort((a, b) => Number(a.metrics?.rmse || 0) - Number(b.metrics?.rmse || 0));
+  const leader = models[0];
+  const runnerUp = models[1];
+  const baseline = models.find((model) => model.stage === "baseline");
+  const cards = [];
+  if (leader) cards.push(fact(t("modelLeader"), leader.name, `${t("bestRmse")}: ${compact(leader.metrics?.rmse)} | ${t("bestMae")}: ${compact(leader.metrics?.mae)}`, "good"));
+  if (runnerUp) cards.push(fact("Runner-up", runnerUp.name, `ΔRMSE: ${compact(Number(runnerUp.metrics?.rmse || 0) - Number(leader.metrics?.rmse || 0))}`, "warn"));
+  if (baseline) cards.push(fact("Baseline", baseline.name, `ΔRMSE: ${compact(Number(baseline.metrics?.rmse || 0) - Number(leader.metrics?.rmse || 0))}`, "muted"));
+  setHTML("benchmark-grid", cards.join(""));
+}
+
+function renderGapAnalysis() {
+  if (!has("gap-analysis")) return;
+  const summary = state.analytics?.summary;
+  if (!summary) return;
+  const categories = Object.entries(summary.category_counts || {}).map(([key, value]) => pill(`${statusText(key)}: ${value}`, statusTone(key))).join("");
+  const positive = (summary.top_positive_gap || []).slice(0, 3).map((row) => pill(`Node ${row.node_id}: ${compact(row.value)}`, "good")).join("");
+  const negative = (summary.top_negative_gap || []).slice(0, 3).map((row) => pill(`Node ${row.node_id}: ${compact(row.value)}`, "risk")).join("");
+  setHTML("gap-analysis", [
+    item({ eyebrow: t("topHotspots"), title: t("positiveGap"), meta: state.analytics?.compare_model_name || t("noCompare"), body: `${t("selectedHorizon")}: ${state.analytics?.horizon || "n/a"}`, tone: "neutral", footer: categories }),
+    item({ eyebrow: t("positiveGap"), title: state.analytics?.compare_model_name || t("noCompare"), body: "Nodes where the active model is higher than the comparison model.", tone: "good", footer: positive || pill(t("noCompare"), "muted") }),
+    item({ eyebrow: t("negativeGap"), title: state.analytics?.compare_model_name || t("noCompare"), body: "Nodes where the active model is lower than the comparison model.", tone: "risk", footer: negative || pill(t("noCompare"), "muted") }),
+  ].join(""));
+}
+
+function renderScenario(target = "scenario-panel") {
+  if (!has(target)) return;
+  const summary = state.scenarioSummary || state.dashboard?.scenario_preview?.summary;
+  if (!summary) return;
+  setHTML(target, item({
+    eyebrow: state.scenarioName || state.dashboard?.scenario_preview?.name || "Scenario",
+    title: `${t("changedNodes")}: ${(summary.changed_nodes || []).join(", ") || "n/a"}`,
+    meta: `${t("selectedHorizon")}: ${summary.forecast_horizon || "n/a"}`,
+    body: `${t("deltaMean")}: ${compact(summary.delta_summary?.mean)} | ${t("deltaMax")}: ${compact(summary.delta_summary?.max)}`,
+    tone: "warn",
+    footer: (summary.top_impacts || []).slice(0, 4).map((row) => pill(`Node ${row.node_id}: ${compact(row.value)}`, "warn")).join(""),
+  }));
+}
+
+function renderDataRegistry() {
+  if (!has("data-registry") || !state.dashboard) return;
+  setHTML("data-registry", (state.dashboard.data_sources?.items || []).map((entry) => item({
+    eyebrow: entry.key,
+    title: entry.name,
+    meta: entry.key === "sentinel2" ? `${t("effectiveSource")}: ${sourceName(state.dashboard.data_sources?.sentinel2_switch?.active_key)}` : `${t("rows")}: ${entry.rows ?? 0}`,
+    body: entry.description || "",
+    tone: entry.key === "sentinel2" || entry.exists ? "good" : "muted",
+    footer: (entry.required_for || []).map((value) => pill(value, "muted")).join(""),
+  })).join(""));
 }
 
 function renderArchitecture() {
-  if (!has("architecture-grid")) return;
-  e("architecture-grid").innerHTML = state.dashboard.architecture
-    .map(
-      (item) => `
-        <article class="mini-card">
-          <div class="section-head"><h3>${item.layer}</h3><span class="status-pill ${item.status}">${nice(item.status)}</span></div>
-          <p><strong>${item.owner}</strong></p>
-          <p>${item.current_scope}</p>
-          <p><strong>${t("nextAction")}:</strong> ${item.next_fill}</p>
-        </article>
-      `,
-    )
-    .join("");
+  if (!has("architecture-grid") || !state.dashboard) return;
+  setHTML("architecture-grid", (state.dashboard.architecture || []).map((entry) => item({
+    eyebrow: entry.service,
+    title: entry.layer,
+    meta: statusText(entry.status),
+    body: `${entry.current_scope} ${entry.next_fill}`,
+    tone: statusTone(entry.status),
+    footer: pill(`${t("owner")}: ${entry.owner}`, "muted"),
+  })).join(""));
 }
 
 function renderMembers() {
-  if (!has("member-grid")) return;
-  e("member-grid").innerHTML = state.dashboard.members
-    .map(
-      (item) => `
-        <article class="mini-card">
-          <div class="section-head"><h3>${item.member}</h3><span class="status-pill ${item.status}">${nice(item.status)}</span></div>
-          <p><strong>${item.role}</strong></p>
-          <p><strong>${t("active")}:</strong> ${item.completed.join("; ")}</p>
-          <p><strong>${t("nextStepsTitle")}:</strong> ${item.remaining.join("; ")}</p>
-        </article>
-      `,
-    )
-    .join("");
+  if (!has("member-grid") || !state.dashboard) return;
+  setHTML("member-grid", (state.dashboard.members || []).map((member) => `
+    <article class="stack-item stack-item--${statusTone(member.status)}">
+      <p class="item-eyebrow">${esc(member.member)}</p>
+      <div class="item-head">
+        <h3>${esc(member.role)}</h3>
+        <span class="item-meta">${esc(statusText(member.status))}</span>
+      </div>
+      <div class="two-list">
+        <div><p class="mini-label">Done</p><ul class="compact-list">${(member.completed || []).map((text) => `<li>${esc(text)}</li>`).join("")}</ul></div>
+        <div><p class="mini-label">Next</p><ul class="compact-list">${(member.remaining || []).map((text) => `<li>${esc(text)}</li>`).join("")}</ul></div>
+      </div>
+    </article>
+  `).join(""));
+}
+
+function renderStudyBrief() {
+  if (!has("study-brief") || !state.dashboard) return;
+  const study = state.dashboard.project?.study_area || {};
+  setHTML("study-brief", [
+    fact(t("studyArea"), study.name || "n/a", `${t("trackedNodes")}: ${study.node_count || 0}`, "good"),
+    fact(t("timeRange"), (study.time_range || []).join(" to "), nice(study.time_granularity || ""), "ink"),
+    fact(t("targetName"), nice(study.current_target || ""), study.status || "", "warn"),
+    fact(t("activeSource"), sourceName(state.dashboard.data_sources?.sentinel2_switch?.active_key), `${t("policyMode")}: ${statusText(state.dashboard.data_sources?.sentinel2_switch?.effective_mode)}`, "muted"),
+  ].join(""));
 }
 
 function renderDocs() {
-  if (!has("docs-grid")) return;
-  e("docs-grid").innerHTML = state.dashboard.docs
-    .map(
-      (item) => `
-        <article class="mini-card">
-          <div class="section-head"><h3>${item.title}</h3><span class="status-pill active">${item.group}</span></div>
-          <p class="path-text">${item.path}</p>
-        </article>
-      `,
-    )
-    .join("");
+  if (!has("docs-grid") || !state.dashboard) return;
+  setHTML("docs-grid", (state.dashboard.docs || []).map((doc) => item({
+    eyebrow: doc.group || "",
+    title: doc.title || "",
+    meta: doc.path || "",
+    body: "Public repository readable. Use README and docs as the main entry points.",
+    tone: "neutral",
+  })).join(""));
+}
+
+function renderMethodology() {
+  if (!has("method-grid")) return;
+  setHTML("method-grid", [
+    t("methodologyNoteOne"),
+    t("methodologyNoteTwo"),
+    t("methodologyNoteThree"),
+    t("methodologyNoteFour"),
+  ].map((text, index) => item({ eyebrow: `0${index + 1}`, title: text, tone: index === 0 ? "good" : "muted" })).join(""));
 }
 
 function renderRoadmap() {
-  if (!has("roadmap-list")) return;
-  e("roadmap-list").innerHTML = state.dashboard.roadmap.map((item) => `<li>${item}</li>`).join("");
+  if (!has("roadmap-list") || !state.dashboard) return;
+  setHTML("roadmap-list", (state.dashboard.roadmap || []).map((text) => `<li>${esc(text)}</li>`).join(""));
 }
 
-function renderScenarioSummary(summaryBlock) {
-  if (!has("scenario-panel") || !summaryBlock || !summaryBlock.summary) return;
-  const summary = summaryBlock.summary;
-  e("scenario-panel").innerHTML = `
-    <p><strong>${summaryBlock.name}</strong></p>
-    <p>${t("horizonLabel")}: ${summary.forecast_horizon}</p>
-    <p>${t("changedNodes")}: ${summary.changed_nodes.join(", ")}</p>
-    <p>${t("deltaMean")}: ${compact(summary.delta_summary.mean)}</p>
-    <p>${t("deltaMax")}: ${compact(summary.delta_summary.max)}</p>
-    <ul class="compact-list">${Object.entries(summary.feature_deltas).map(([key, value]) => `<li>${key}<strong>${compact(value)}</strong></li>`).join("")}</ul>
-  `;
-}
-
-function populateModelControls() {
-  const models = state.dashboard.models;
-  const defaults = state.dashboard.default_models;
-  const modelOptions = models
-    .map((model) => `<option value="${model.key}" ${model.key === defaults.multi_step ? "selected" : ""}>${model.name}</option>`)
-    .join("");
-  if (has("model-select")) e("model-select").innerHTML = modelOptions;
-  if (has("scenario-model-select")) e("scenario-model-select").innerHTML = modelOptions;
+function controls() {
+  const models = state.dashboard?.models || [];
+  if (has("model-select")) {
+    el("model-select").innerHTML = models.map((model) => `<option value="${esc(model.key)}">${esc(model.name)}</option>`).join("");
+    el("model-select").value = state.selectedModel || models[0]?.key || "";
+  }
   if (has("compare-model-select")) {
-    e("compare-model-select").innerHTML = [
-      `<option value="">${t("noCompare")}</option>`,
-      ...models.map((model) => `<option value="${model.key}" ${model.key === "lstm_multistep_baseline" ? "selected" : ""}>${model.name}</option>`),
-    ].join("");
+    el("compare-model-select").innerHTML = `<option value="${NO_COMPARE}">${esc(t("noCompare"))}</option>${models.filter((model) => model.key !== (state.selectedModel || models[0]?.key)).map((model) => `<option value="${esc(model.key)}">${esc(model.name)}</option>`).join("")}`;
+    el("compare-model-select").value = state.compareModel || NO_COMPARE;
+    if (![...el("compare-model-select").options].some((option) => option.value === el("compare-model-select").value)) {
+      el("compare-model-select").value = NO_COMPARE;
+    }
   }
-}
-
-function populateHorizonSelect(payload, previousValue) {
-  if (!has("horizon-select")) return;
-  const horizons = payload.forecast_timestamps || [];
-  const selected = horizons.includes(previousValue) ? previousValue : horizons[0];
-  e("horizon-select").innerHTML = horizons.map((item) => `<option value="${item}" ${item === selected ? "selected" : ""}>${item}</option>`).join("");
-}
-
-function ensureCesiumViewer() {
-  if (!has("cesium-container") || !has("map-fallback")) return null;
-  if (!window.Cesium) {
-    e("map-fallback").classList.remove("hidden");
-    return null;
+  if (has("scenario-model-select")) {
+    el("scenario-model-select").innerHTML = models.map((model) => `<option value="${esc(model.key)}">${esc(model.name)}</option>`).join("");
+    el("scenario-model-select").value = state.selectedModel || models[0]?.key || "";
   }
-  if (state.viewer) {
-    e("map-fallback").classList.add("hidden");
-    return state.viewer;
+  if (has("horizon-select")) {
+    const summary = state.predictionPayload ? summaryFromPayload(state.predictionPayload) : state.dashboard?.prediction_preview;
+    const horizons = summary?.forecast_timestamps || [];
+    el("horizon-select").innerHTML = horizons.map((value) => `<option value="${esc(value)}">${esc(value)}</option>`).join("");
+    el("horizon-select").value = state.selectedHorizon || horizons[0] || "";
   }
-  const Cesium = window.Cesium;
-  const viewer = new Cesium.Viewer("cesium-container", {
-    animation: false,
-    timeline: false,
-    geocoder: false,
-    homeButton: false,
-    sceneModePicker: false,
-    navigationHelpButton: false,
-    fullscreenButton: false,
-    baseLayerPicker: false,
-    infoBox: false,
-    selectionIndicator: false,
-    imageryProvider: new Cesium.OpenStreetMapImageryProvider({ url: "https://tile.openstreetmap.org/" }),
-  });
-  viewer.scene.globe.depthTestAgainstTerrain = false;
-  viewer.camera.flyTo({ destination: Cesium.Rectangle.fromDegrees(118.3, 31.2, 119.3, 32.7), duration: 0 });
-  state.viewer = viewer;
-  e("map-fallback").classList.add("hidden");
-  return viewer;
-}
-
-function forecastColor(Cesium, value, min, max) {
-  const span = Math.max(max - min, 1e-6);
-  const ratio = (value - min) / span;
-  return Cesium.Color.fromHsl(0.62 - ratio * 0.52, 0.78, 0.52, 0.78);
-}
-
-function riskColor(Cesium, level) {
-  if (level === "critical") return Cesium.Color.fromCssColorString("#c6512d").withAlpha(0.82);
-  if (level === "high") return Cesium.Color.fromCssColorString("#dd7c39").withAlpha(0.82);
-  if (level === "elevated") return Cesium.Color.fromCssColorString("#e7b760").withAlpha(0.82);
-  return Cesium.Color.fromCssColorString("#20756e").withAlpha(0.78);
-}
-
-function gapColor(Cesium, value) {
-  return value >= 0
-    ? Cesium.Color.fromCssColorString("#d85d43").withAlpha(0.78)
-    : Cesium.Color.fromCssColorString("#0f6d70").withAlpha(0.78);
 }
 
 function mapConfig() {
-  if (state.mapMode === "delta") {
-    return { items: state.deltaItems || [], label: t("scenarioDeltaButton"), legend: [[t("positiveGap"), "legend-positive"], [t("scenarioDeltaButton"), "legend-negative"]], value: (item) => Number(item.value) };
-  }
-  if (!state.analytics) return { items: [], label: t("businessMapTag"), legend: [], value: () => 0 };
   if (state.mapMode === "hotspots") {
-    return { items: state.analytics.items, label: t("hotspotsButton"), legend: [[t("critical"), "legend-critical"], [t("high"), "legend-high"], [t("elevated"), "legend-elevated"], [t("stable"), "legend-stable"]], value: (item) => Number(item.risk_score || 0) };
+    return { title: t("hotspotsButton"), items: state.analytics?.items || [], value: (item) => item.risk_score ?? 0, color: (item) => ({ critical: "#c6542b", high: "#d98b39", elevated: "#d8b25c", stable: "#1f7a72" }[String(item.risk_level || "stable")] || "#1f7a72") };
   }
   if (state.mapMode === "gap") {
-    return { items: state.analytics.items.filter((item) => typeof item.comparison_gap === "number"), label: t("modelGapButton"), legend: [[t("positiveGap"), "legend-positive"], [t("noGap"), "legend-negative"]], value: (item) => Number(item.comparison_gap || 0) };
+    return { title: t("modelGapButton"), items: (state.analytics?.items || []).filter((item) => item.comparison_gap !== null && item.comparison_gap !== undefined), value: (item) => item.comparison_gap ?? 0, color: (item) => Number(item.comparison_gap || 0) >= 0 ? "#146c67" : "#b94d31" };
   }
-  return { items: state.predictionLayer ? state.predictionLayer.items : [], label: t("forecastButton"), legend: [[t("low"), "legend-stable"], [t("highValue"), "legend-critical"]], value: (item) => Number(item.value) };
+  if (state.mapMode === "delta") {
+    return { title: t("scenarioDeltaButton"), items: state.deltaItems || [], value: (item) => item.value ?? 0, color: (item) => Number(item.value || 0) >= 0 ? "#b94d31" : "#146c67" };
+  }
+  return { title: t("forecastButton"), items: state.predictionLayer?.items || [], value: (item) => item.value ?? 0, color: (item, min, max) => {
+    const value = Number(item.value || 0);
+    const ratio = max > min ? (value - min) / (max - min) : 0.5;
+    const red = Math.round(31 + (191 - 31) * ratio);
+    const green = Math.round(122 + (90 - 122) * ratio);
+    const blue = Math.round(114 + (48 - 114) * ratio);
+    return `rgba(${red}, ${green}, ${blue}, 0.82)`;
+  } };
 }
 
-function renderLegend(label, entries) {
-  if (!has("map-legend")) return;
-  e("map-legend").innerHTML = `
-    <div class="legend-title">${label}</div>
-    <div class="legend-items">${entries.map(([text, cls]) => `<span class="legend-item"><i class="legend-swatch ${cls}"></i>${text}</span>`).join("")}</div>
-  `;
-}
-
-function renderCurrentMap() {
-  if (!has("map-status")) return;
+function renderMap() {
+  if (!has("cesium-container")) return;
   const config = mapConfig();
-  renderLegend(config.label, config.legend);
-  const viewer = ensureCesiumViewer();
-  if (!viewer) {
-    e("map-status").textContent = `${config.label} / ${t("panelMode")}`;
-    return;
-  }
-  const items = config.items || [];
-  if (!items.length) {
-    viewer.entities.removeAll();
-    e("map-status").textContent = `${config.label} / ${t("noItems")}`;
-    return;
-  }
-
-  const values = items.map(config.value);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  viewer.entities.removeAll();
-  const Cesium = window.Cesium;
-  items.forEach((item) => {
-    const baseValue = config.value(item);
-    let material = forecastColor(Cesium, baseValue, min, max);
-    let extrudedHeight = 600 + ((baseValue - min) / Math.max(max - min, 1e-6)) * 9000;
-    if (state.mapMode === "hotspots") {
-      material = riskColor(Cesium, item.risk_level);
-      extrudedHeight = 800 + Number(item.risk_score || 0) * 9000;
-    } else if (state.mapMode === "gap") {
-      material = gapColor(Cesium, Number(item.comparison_gap || 0));
-      extrudedHeight = 300 + Math.abs(Number(item.comparison_gap || 0)) * 100000;
-    } else if (state.mapMode === "delta") {
-      material = gapColor(Cesium, baseValue);
-      extrudedHeight = Math.max(200, Math.abs(baseValue) * 90000);
-    }
-    viewer.entities.add({
-      rectangle: {
-        coordinates: Cesium.Rectangle.fromDegrees(item.min_lon, item.min_lat, item.max_lon, item.max_lat),
-        material,
-        outline: true,
-        outlineColor: Cesium.Color.fromCssColorString("#f4efe7").withAlpha(0.22),
-        height: 0,
-        extrudedHeight,
-      },
-      description: `node ${item.node_id}<br/>value: ${compact(baseValue)}`,
+  const values = config.items.map((item) => Number(config.value(item))).filter(Number.isFinite);
+  const min = values.length ? Math.min(...values) : 0;
+  const max = values.length ? Math.max(...values) : 1;
+  setHTML("map-legend", `<div class="legend-title">${esc(config.title)}</div><div class="legend-items">${pill(`${t("min")}: ${compact(min)}`, "muted")}${pill(`${t("max")}: ${compact(max)}`, "muted")}${pill(`${t("cells")}: ${config.items.length}`, "neutral")}</div>`);
+  setHTML("map-status", `${pill(`${t("modelLabel")}: ${(state.dashboard.models || []).find((model) => model.key === state.selectedModel)?.name || "n/a"}`, "neutral")}${pill(`${t("selectedHorizon")}: ${state.selectedHorizon || "n/a"}`, "neutral")}`);
+  setHTML("map-fallback", `<p class="fallback-title">${esc(t("mapFallback"))}</p><div class="fallback-list">${config.items.slice(0, 8).map((item) => `<div class="fallback-row"><span>Node ${esc(item.node_id)}</span><strong>${esc(compact(config.value(item)))}</strong></div>`).join("")}</div>`);
+  el("map-fallback")?.classList.add("is-visible");
+  if (!window.Cesium) return;
+  if (!state.viewer) {
+    state.viewer = new window.Cesium.Viewer("cesium-container", { animation: false, baseLayerPicker: false, fullscreenButton: false, geocoder: false, homeButton: false, infoBox: false, sceneModePicker: false, selectionIndicator: false, timeline: false, navigationHelpButton: false, terrainProvider: new window.Cesium.EllipsoidTerrainProvider() });
+    state.viewer.imageryLayers.removeAll();
+    state.viewer.scene.globe.baseColor = window.Cesium.Color.fromCssColorString("#23333c");
+    state.viewer.useBrowserRecommendedResolution = false;
+    state.viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 2);
+    state.viewer.scene.msaaSamples = 4;
+    window.addEventListener("resize", () => {
+      if (!state.viewer) return;
+      state.viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 2);
+      state.viewer.resize();
     });
+  }
+  const viewer = state.viewer;
+  viewer.entities.removeAll();
+  config.items.forEach((item) => {
+    if (![item.min_lon, item.min_lat, item.max_lon, item.max_lat].every((value) => Number.isFinite(Number(value)))) return;
+    viewer.entities.add({ rectangle: { coordinates: window.Cesium.Rectangle.fromDegrees(Number(item.min_lon), Number(item.min_lat), Number(item.max_lon), Number(item.max_lat)), material: window.Cesium.Color.fromCssColorString(config.color(item, min, max)), outline: true, outlineColor: window.Cesium.Color.fromCssColorString("rgba(255,255,255,0.2)") } });
   });
-  e("map-status").textContent = `${config.label} / ${t("cells")} ${items.length} / ${t("min")} ${compact(min)} / ${t("max")} ${compact(max)}`;
+  if (config.items.length) {
+    const minLon = Math.min(...config.items.map((item) => Number(item.min_lon)));
+    const minLat = Math.min(...config.items.map((item) => Number(item.min_lat)));
+    const maxLon = Math.max(...config.items.map((item) => Number(item.max_lon)));
+    const maxLat = Math.max(...config.items.map((item) => Number(item.max_lat)));
+    viewer.camera.flyTo({ destination: window.Cesium.Rectangle.fromDegrees(minLon, minLat, maxLon, maxLat), duration: 0 });
+  }
+  el("map-fallback")?.classList.remove("is-visible");
 }
 
-function setToolbarState(mode) {
-  [["show-forecast", "forecast"], ["show-hotspots", "hotspots"], ["show-gap", "gap"], ["show-delta", "delta"]].forEach(([id, value]) => {
-    if (has(id)) e(id).classList.toggle("is-active", value === mode);
-  });
-}
-
-async function refreshAnalyticsAndMap({ preserveHorizon = true } = {}) {
-  if (!has("model-select")) return;
-  const modelKey = e("model-select").value;
-  const compareKey = has("compare-model-select") ? e("compare-model-select").value : "";
-  const previous = preserveHorizon && has("horizon-select") ? e("horizon-select").value : null;
-
-  state.predictionPayload = await fetchJson(`${URLS.prediction}?model_key=${encodeURIComponent(modelKey)}`);
-  populateHorizonSelect(state.predictionPayload, previous);
-  const horizon = has("horizon-select") ? e("horizon-select").value : "";
-  state.predictionLayer = await fetchJson(`${URLS.predictionLayer}?model_key=${encodeURIComponent(modelKey)}&horizon=${encodeURIComponent(horizon)}`);
-  state.analytics = await fetchJson(`${URLS.predictionAnalytics}?model_key=${encodeURIComponent(modelKey)}&horizon=${encodeURIComponent(horizon)}&compare_model_key=${encodeURIComponent(compareKey)}`);
-  renderHotspotList();
+function renderAll() {
+  renderStaticText();
+  renderHero();
+  renderMetrics();
+  controls();
+  renderOverviewStory();
+  renderSourcePolicy();
+  renderSegmentation();
+  renderHotspots();
+  renderManagement();
   renderPredictionSummary();
-  if (state.mapMode !== "delta") state.mapMode = "forecast";
-  setToolbarState(state.mapMode);
-  renderCurrentMap();
+  renderModels();
+  renderModelLabSummary();
+  renderBenchmark();
+  renderGapAnalysis();
+  renderScenario("scenario-panel");
+  renderScenario("scenario-example");
+  renderDataRegistry();
+  renderArchitecture();
+  renderMembers();
+  renderStudyBrief();
+  renderDocs();
+  renderMethodology();
+  renderRoadmap();
+  renderMap();
 }
 
-async function handleSourcePolicyClick(event) {
-  const button = event.target.closest("[data-source-mode]");
-  if (!button || !state.apiAvailable) return;
-  button.disabled = true;
+async function refreshModelViews() {
+  state.selectedModel = el("model-select")?.value || state.selectedModel;
+  const compareValue = el("compare-model-select")?.value || state.compareModel || NO_COMPARE;
+  state.compareModel = compareValue === NO_COMPARE ? null : compareValue;
+  if (has("horizon-select")) state.selectedHorizon = el("horizon-select").value || state.selectedHorizon;
+  if (!state.apiAvailable) {
+    renderAll();
+    return;
+  }
   try {
-    state.sourcePolicy = await fetchJson(URLS.sourcePolicy, {
+    state.predictionPayload = await fetchJson(query(URLS.prediction, { model_key: state.selectedModel }));
+    const summary = summaryFromPayload(state.predictionPayload);
+    if (!summary?.forecast_timestamps?.includes(state.selectedHorizon)) {
+      state.selectedHorizon = summary?.forecast_timestamps?.[0] || null;
+    }
+    state.predictionLayer = await fetchJson(query(URLS.predictionLayer, { model_key: state.selectedModel, horizon: state.selectedHorizon }));
+    state.analytics = await fetchJson(query(URLS.analytics, { model_key: state.selectedModel, horizon: state.selectedHorizon, compare_model_key: state.compareModel }));
+  } catch (error) {
+    console.error(error);
+    state.apiAvailable = false;
+  }
+  renderAll();
+}
+
+async function updateSourcePolicy(mode, preferred) {
+  if (!state.apiAvailable) return;
+  try {
+    await fetchJson(URLS.sourcePolicy, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: button.dataset.sourceMode, preferred_source_key: button.dataset.sourceKey || null }),
+      body: JSON.stringify({ mode, preferred_source_key: mode === "manual" ? preferred : null }),
     });
-    state.dashboard = await fetchJson(URLS.dashboard);
-    state.platformStatus = await fetchJson(URLS.platformStatus);
-    state.segmentationOverview = await fetchJson(URLS.segmentationOverview);
+    state.sourcePolicy = await loadOptional(URLS.sourcePolicy, state.sourcePolicy);
+    const dataSources = await loadOptional(URLS.dataSources, state.dashboard?.data_sources);
+    if (dataSources && state.dashboard) state.dashboard.data_sources = dataSources;
     renderAll();
   } catch (error) {
-    window.alert(`${t("updateFailed")}: ${error.message}`);
-  } finally {
-    button.disabled = false;
+    console.error(error);
+    window.alert(t("updateFailed"));
   }
 }
 
-async function handleScenarioSubmit(event) {
+async function runScenario(event) {
   event.preventDefault();
-  if (!has("scenario-panel")) return;
   if (!state.apiAvailable) {
-    e("scenario-panel").innerHTML = `<p>${t("scenarioUnavailable")}</p>`;
+    window.alert(t("scenarioUnavailable"));
     return;
   }
-  const button = e("scenario-submit");
-  const form = new FormData(event.currentTarget);
-  button.disabled = true;
-  button.textContent = t("running");
+  const submit = el("scenario-submit");
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  submit.disabled = true;
+  submit.textContent = t("running");
   try {
     const response = await fetchJson(URLS.runScenario, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model_key: form.get("model_key"),
-        preset: form.get("preset"),
-        intensity: Number(form.get("intensity")),
-        node_ids: String(form.get("node_ids")).split(",").map((item) => item.trim()).filter(Boolean),
-        graph_propagation: { hops: Number(form.get("hops")), attenuation: Number(form.get("attenuation")), blend_mode: "sum" },
-        temporal_profile: { mode: form.get("temporal_mode"), start_weight: 0.35, end_weight: 1.0 },
+        model_key: formData.get("model_key"),
+        preset: formData.get("preset"),
+        node_ids: String(formData.get("node_ids") || "").split(",").map((value) => value.trim()).filter(Boolean),
+        intensity: Number(formData.get("intensity") || 1),
+        graph_propagation: { hops: Number(formData.get("hops") || 0), attenuation: Number(formData.get("attenuation") || 0) },
+        temporal_profile: { mode: formData.get("temporal_mode") },
       }),
     });
-    state.deltaItems = response.delta_layer;
+    state.deltaItems = response.delta_layer || [];
+    state.scenarioSummary = response.summary || null;
+    state.scenarioName = response.scenario_request?.preset || "Scenario";
     state.mapMode = "delta";
-    setToolbarState("delta");
-    renderScenarioSummary({ name: "Live scenario result", summary: response.summary });
-    renderCurrentMap();
+    renderAll();
   } catch (error) {
-    e("scenario-panel").innerHTML = `<p>${t("scenarioFailed")}: ${error.message}</p>`;
+    console.error(error);
+    window.alert(t("scenarioFailed"));
   } finally {
-    button.disabled = false;
-    button.textContent = t("runScenarioButton");
+    submit.disabled = false;
+    submit.textContent = t("runScenarioButton");
   }
 }
 
 function bindEvents() {
-  if (has("lang-zh")) e("lang-zh").addEventListener("click", () => setLanguage("zh"));
-  if (has("lang-en")) e("lang-en").addEventListener("click", () => setLanguage("en"));
-  if (has("model-select")) e("model-select").addEventListener("change", () => refreshAnalyticsAndMap({ preserveHorizon: false }));
-  if (has("compare-model-select")) e("compare-model-select").addEventListener("change", () => refreshAnalyticsAndMap());
-  if (has("horizon-select")) e("horizon-select").addEventListener("change", () => refreshAnalyticsAndMap());
-  if (has("scenario-form")) e("scenario-form").addEventListener("submit", handleScenarioSubmit);
-  if (has("source-policy-grid")) e("source-policy-grid").addEventListener("click", handleSourcePolicyClick);
-  if (has("show-forecast")) e("show-forecast").addEventListener("click", () => { state.mapMode = "forecast"; setToolbarState("forecast"); renderCurrentMap(); });
-  if (has("show-hotspots")) e("show-hotspots").addEventListener("click", () => { state.mapMode = "hotspots"; setToolbarState("hotspots"); renderCurrentMap(); });
-  if (has("show-gap")) e("show-gap").addEventListener("click", () => { state.mapMode = "gap"; setToolbarState("gap"); renderCurrentMap(); });
-  if (has("show-delta")) e("show-delta").addEventListener("click", () => { if (state.deltaItems) { state.mapMode = "delta"; setToolbarState("delta"); renderCurrentMap(); } });
-  if (has("reset-map")) e("reset-map").addEventListener("click", () => {
-    state.mapMode = "forecast";
-    setToolbarState("forecast");
-    renderCurrentMap();
-    if (state.viewer && window.Cesium) {
-      state.viewer.camera.flyTo({ destination: window.Cesium.Rectangle.fromDegrees(118.3, 31.2, 119.3, 32.7), duration: 0.5 });
-    }
+  if (state.eventsBound) return;
+  state.eventsBound = true;
+  el("lang-zh")?.addEventListener("click", () => {
+    state.language = "zh";
+    window.localStorage.setItem("spatio_eco_lang", "zh");
+    renderAll();
+  });
+  el("lang-en")?.addEventListener("click", () => {
+    state.language = "en";
+    window.localStorage.setItem("spatio_eco_lang", "en");
+    renderAll();
+  });
+  el("model-select")?.addEventListener("change", refreshModelViews);
+  el("compare-model-select")?.addEventListener("change", refreshModelViews);
+  el("horizon-select")?.addEventListener("change", refreshModelViews);
+  el("scenario-form")?.addEventListener("submit", runScenario);
+  el("show-forecast")?.addEventListener("click", () => { state.mapMode = "forecast"; renderAll(); });
+  el("show-hotspots")?.addEventListener("click", () => { state.mapMode = "hotspots"; renderAll(); });
+  el("show-gap")?.addEventListener("click", () => { state.mapMode = "gap"; renderAll(); });
+  el("show-delta")?.addEventListener("click", () => { state.mapMode = "delta"; renderAll(); });
+  el("reset-map")?.addEventListener("click", () => { state.mapMode = "forecast"; renderAll(); });
+  document.body.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-source-mode]");
+    if (!button) return;
+    updateSourcePolicy(button.dataset.sourceMode, button.dataset.preferredSource || null);
   });
 }
 
-function renderAll() {
-  applyStaticText();
-  renderHero();
-  renderMetricsStrip();
-  renderSourcePolicyPanel();
-  renderSegmentationStatus();
-  renderHotspotList();
-  renderManagement();
-  renderModels();
-  renderPredictionSummary();
-  renderArchitecture();
-  renderMembers();
-  renderDocs();
-  renderRoadmap();
-  renderScenarioSummary(state.dashboard.scenario_preview);
-  if (has("model-select")) populateModelControls();
-  setToolbarState(state.mapMode);
-  renderCurrentMap();
-}
-
 async function bootstrap() {
-  applyStaticText();
-  const dashboardResult = await loadDashboard();
-  state.apiAvailable = !dashboardResult.fallback;
-  state.dashboard = dashboardResult.payload;
-  state.platformStatus = state.apiAvailable ? await loadOptional(URLS.platformStatus, platformFallback(state.dashboard)) : platformFallback(state.dashboard);
-  state.sourcePolicy = state.apiAvailable ? await loadOptional(URLS.sourcePolicy, sourcePolicyFallback(state.dashboard)) : sourcePolicyFallback(state.dashboard);
-  state.segmentationOverview = state.apiAvailable ? await loadOptional(URLS.segmentationOverview, segmentationFallback(state.dashboard)) : segmentationFallback(state.dashboard);
-  state.analytics = state.apiAvailable
-    ? await loadOptional(`${URLS.predictionAnalytics}?model_key=${encodeURIComponent(state.dashboard.default_models.multi_step)}`, state.dashboard.business_preview)
-    : state.dashboard.business_preview;
+  const { payload, fallback } = await loadDashboard();
+  state.apiAvailable = !fallback;
+  state.dashboard = payload;
+  state.platformStatus = fallback ? payload.management : await loadOptional(URLS.platformStatus, payload.management);
+  state.sourcePolicy = fallback ? payload.data_sources?.sentinel2_switch : await loadOptional(URLS.sourcePolicy, payload.data_sources?.sentinel2_switch);
+  state.segmentationOverview = fallback ? payload.data_sources?.segmentation_remote : await loadOptional(URLS.segmentationOverview, payload.data_sources?.segmentation_remote);
+  state.selectedModel = payload.default_models?.multi_step || payload.models?.[0]?.key || null;
+  state.compareModel = payload.models?.find((model) => model.stage === "baseline")?.key || null;
+  state.analytics = payload.business_preview || null;
+  state.predictionLayer = payload.business_preview ? { items: payload.business_preview.items || [], horizon: payload.business_preview.horizon } : null;
+  state.selectedHorizon = payload.business_preview?.horizon || null;
+  state.scenarioSummary = payload.scenario_preview?.summary || null;
+  state.scenarioName = payload.scenario_preview?.name || null;
+  state.deltaItems = payload.scenario_preview?.delta_layer || [];
+  renderAll();
   bindEvents();
-  if (state.apiAvailable && has("model-select")) {
-    populateModelControls();
-    await refreshAnalyticsAndMap({ preserveHorizon: false });
-  } else {
-    renderAll();
-  }
+  if (state.apiAvailable) await refreshModelViews();
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error(error);
+  state.apiAvailable = false;
+  renderAll();
+});
