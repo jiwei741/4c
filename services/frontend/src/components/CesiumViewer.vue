@@ -35,9 +35,9 @@ const TIANDITU_TOKEN = 'f7c661500b1d6f3873b1538c67d81ad8'
 // 时间戳映射：将季度格式转换为后端API需要的日期格式
 function quarterToDate(quarterStr) {
   // '2020-Q2' -> '2020-06-01'
-  const [year, quarter] = quarterStr.split('-Q')
-  const months = { 'Q1': '-01-01', 'Q2': '-04-01', 'Q3': '-07-01', 'Q4': '-10-01' }
-  return `${year}${months[quarter]}`
+  const [year, quarter] = quarterStr.split('-')
+  const months = { Q1: '-01-01', Q2: '-04-01', Q3: '-07-01', Q4: '-10-01' }
+  return `${year}${months[quarter] || '-01-01'}`
 }
 
 // 反向转换：日期格式转季度格式
@@ -278,7 +278,13 @@ function setupClickHandler() {
 
     if (nearestPoint) {
       window.dispatchEvent(new CustomEvent('point-selected', {
-        detail: { lat: nearestPoint.lat, lon: nearestPoint.lon, gpp: nearestPoint.gpp }
+        detail: {
+          lat: nearestPoint.lat,
+          lon: nearestPoint.lon,
+          gpp: nearestPoint.gpp,
+          screenX: movement.position.x,
+          screenY: movement.position.y,
+        }
       }))
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK)

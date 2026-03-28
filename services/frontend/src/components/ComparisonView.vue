@@ -61,7 +61,7 @@
 
     <!-- 滑块对比模式 -->
     <div v-else-if="viewMode === 'slider'" class="slider-view">
-      <div class="slider-container">
+      <div ref="sliderContainer" class="slider-container">
         <div class="slider-layer original-layer" :style="{ width: sliderPosition + '%' }">
           <div ref="sliderOriginalContainer" class="cesium-view"></div>
           <div class="layer-label original-label">原始</div>
@@ -151,6 +151,7 @@ const originalContainer = ref(null)
 const scenarioContainer = ref(null)
 const sliderOriginalContainer = ref(null)
 const sliderScenarioContainer = ref(null)
+const sliderContainer = ref(null)
 const toggleContainer = ref(null)
 
 // 计算属性
@@ -291,7 +292,7 @@ function startDrag(e) {
 
 function onDrag(e) {
   if (!isDragging.value) return
-  const container = e.currentTarget.closest('.slider-container')
+  const container = sliderContainer.value
   if (container) {
     const rect = container.getBoundingClientRect()
     const percent = ((e.clientX - rect.left) / rect.width) * 100

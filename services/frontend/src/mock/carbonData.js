@@ -25,10 +25,10 @@ export function generateMockCarbonData(date = '2020-Q2') {
   if (date.includes('-Q')) {
     // 季度格式：2020-Q1, Q2, Q3, Q4
     const quarter = date.split('-Q')[1]
-    if (quarter === 'Q1') seasonFactor = -1.5  // 冬季低
-    else if (quarter === 'Q2') seasonFactor = 0.5  // 春季
-    else if (quarter === 'Q3') seasonFactor = 1.5  // 夏季高
-    else if (quarter === 'Q4') seasonFactor = -0.5  // 秋季
+    if (quarter === '1') seasonFactor = -1.5  // 冬季低
+    else if (quarter === '2') seasonFactor = 0.5  // 春季
+    else if (quarter === '3') seasonFactor = 1.5  // 夏季高
+    else if (quarter === '4') seasonFactor = -0.5  // 秋季
   } else {
     // 日期格式：2020-06-01
     const month = parseInt(date.substring(5, 7))

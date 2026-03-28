@@ -129,6 +129,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { getScenarioNodeIds, runScenarioRequest } from '../api/scenario.js'
 
 // 组件状态
 const visible = ref(false)
@@ -215,27 +216,32 @@ async function runScenario() {
   loading.value = true
 
   try {
-    // 调用后端 API
-    const response = await fetch('http://localhost:8000/api/scenario', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        area: selectedArea.value,
-        emissionMultiplier: emissionMultiplier.value,
-        years: predictionYears.value
-      })
-    })
-
-    const data = await response.json()
-
-    // 保存结果
-    result.value = {
-      originalData: data.original,
-      scenarioData: data.scenario,
-      gppChange: data.avgGppChange,
-      carbonImpact: data.carbonImpactPercent,
-      emissionMultiplier: emissionMultiplier.value
+    const nodeIds = await getScenarioNodeIds(selectedArea.value.bounds)
+    if (nodeIds.length === 0) {
+      throw new Error('No grid nodes found in the selected area.')
     }
+
+    const scenarioPayload = {
+      preset: 'industrial_expansion',
+      intensity: Number(emissionMultiplier.value),
+      node_ids: nodeIds,
+      graph_propagation: {
+        hops: 2,
+        attenuation: 0.65,
+        blend_mode: 'sum',
+      },
+      temporal_profile: predictionYears.value > 1
+        ? {
+            mode: 'linear',
+            start_weight: 0.35,
+            end_weight: 1.0,
+          }
+        : {
+            mode: 'last',
+          },
+    }
+
+    result.value = await runScenarioRequest(scenarioPayload, emissionMultiplier.value)
 
     // 通知主组件显示对比视图
     window.dispatchEvent(new CustomEvent('scenario-result', {

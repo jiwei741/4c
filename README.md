@@ -67,11 +67,11 @@ powershell -ExecutionPolicy Bypass -File scripts/start_platform.ps1
 - 前端地址
 - 后端健康检查地址
 
-如需自动打开浏览器：
+启动成功后会自动打开浏览器；如需跳过：
 
 ```powershell
 cd d:\4c
-powershell -ExecutionPolicy Bypass -File scripts/start_platform.ps1 -OpenBrowser
+powershell -ExecutionPolicy Bypass -File scripts/start_platform.ps1 -NoBrowser
 ```
 
 联调测试：

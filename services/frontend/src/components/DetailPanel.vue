@@ -80,9 +80,11 @@
     window.removeEventListener('point-selected', handlePointSelected)
   })
   
-  function handlePointSelected(event) {
-    show(event.detail, event.clientX || 300, event.clientY || 200)
-  }
+function handlePointSelected(event) {
+  const detail = event.detail || {}
+  const { screenX = 300, screenY = 200, ...pointData } = detail
+  show(pointData, screenX, screenY)
+}
   
   defineExpose({ show, close })
   </script>

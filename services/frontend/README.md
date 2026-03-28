@@ -1,37 +1,64 @@
-# frontend
+# Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+This frontend is a Vue 3 + Vite application with Cesium-based map views.
 
-## Recommended IDE Setup
+## Runtime Requirements
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Node.js `^20.19.0 || >=22.12.0`
+- npm `>=10`
+- Backend API available on `http://127.0.0.1:8000` by default
+- Free local ports:
+  - `8000` for backend
+  - `4173` for frontend dev server
 
-## Recommended Browser Setup
+## Manual Startup
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+Install dependencies:
 
 ```sh
-npm install
+npm ci
 ```
 
-### Compile and Hot-Reload for Development
+Run the dev server:
 
 ```sh
-npm run dev
+npm run dev -- --host 127.0.0.1 --port 4173 --strictPort
 ```
 
-### Compile and Minify for Production
+Override the backend API base URL when needed:
+
+```sh
+set VITE_API_BASE_URL=http://127.0.0.1:8001
+npm run dev -- --host 127.0.0.1 --port 4173 --strictPort
+```
+
+## One-Click Full Stack Startup
+
+From the repository root, the browser now opens the frontend page automatically after startup succeeds:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start_platform.ps1
+```
+
+Or double click / run:
+
+```cmd
+scripts\start_platform.cmd
+```
+
+Skip browser auto-open:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start_platform.ps1 -NoBrowser
+```
+
+Stop both services:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/stop_platform.ps1
+```
+
+## Build
 
 ```sh
 npm run build

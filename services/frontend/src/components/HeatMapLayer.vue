@@ -79,7 +79,11 @@ function renderHeatmap(gridData) {
       if (data) {
         // 触发事件，通知详情面板
         window.dispatchEvent(new CustomEvent('point-selected', {
-          detail: data
+          detail: {
+            ...data,
+            screenX: movement.position.x,
+            screenY: movement.position.y,
+          }
         }))
       }
     }
