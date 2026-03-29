@@ -29,6 +29,10 @@ let drawHandler = null
 let drawingEntity = null
 let startPosition = null
 let tempRectangle = null
+let resetViewListener = null
+let toggleLayerListener = null
+let enterDrawingModeListener = null
+let exitDrawingModeListener = null
 
 const TIANDITU_TOKEN = 'f7c661500b1d6f3873b1538c67d81ad8'
 
@@ -88,6 +92,10 @@ watch(() => props.date, async (newDate) => {
 
 // 进入绘制模式
 function enterDrawingMode() {
+  if (!viewer) return
+
+  setupDrawingHandler()
+  clearDrawingOverlay()
   isDrawingMode = true
   // 禁用相机控制，防止拖动时地图跟着动
   viewer.scene.screenSpaceCameraController.enableInputs = false
@@ -97,11 +105,13 @@ function enterDrawingMode() {
 
 // 退出绘制模式
 function exitDrawingMode() {
+  if (!viewer) return
+
   isDrawingMode = false
   // 重新启用相机控制
   viewer.scene.screenSpaceCameraController.enableInputs = true
   viewer.canvas.style.cursor = 'default'
-  clearDrawing()
+  clearDrawingOverlay()
   removeDrawingHint()
 }
 
@@ -132,14 +142,10 @@ function removeDrawingHint() {
 }
 
 // 清除绘制内容
-function clearDrawing() {
+function clearDrawingOverlay() {
   if (drawingEntity) {
     viewer.entities.remove(drawingEntity)
     drawingEntity = null
-  }
-  if (drawHandler) {
-    drawHandler.destroy()
-    drawHandler = null
   }
   startPosition = null
   tempRectangle = null
@@ -147,6 +153,10 @@ function clearDrawing() {
 
 // 设置绘制事件监听
 function setupDrawingHandler() {
+  if (drawHandler || !viewer) {
+    return
+  }
+
   drawHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
 
   // 鼠标按下 - 开始绘制
@@ -306,26 +316,30 @@ onMounted(() => {
   })
 
   // 监听重置视图事件
-  window.addEventListener('reset-view', () => {
+  resetViewListener = () => {
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 80000),
       duration: 1.5
     })
-  })
+  }
+  window.addEventListener('reset-view', resetViewListener)
 
-  // 监听切换图层事件
-  window.addEventListener('toggle-layer', () => {
+  // Layer toggle listener
+  toggleLayerListener = () => {
     layerVisible.value = !layerVisible.value
-  })
+  }
+  window.addEventListener('toggle-layer', toggleLayerListener)
 
-  // 监听绘制模式事件
-  window.addEventListener('enter-drawing-mode', () => {
+  // Drawing mode listeners
+  enterDrawingModeListener = () => {
     enterDrawingMode()
-  })
+  }
+  window.addEventListener('enter-drawing-mode', enterDrawingModeListener)
 
-  window.addEventListener('exit-drawing-mode', () => {
+  exitDrawingModeListener = () => {
     exitDrawingMode()
-  })
+  }
+  window.addEventListener('exit-drawing-mode', exitDrawingModeListener)
 
   // 添加底图 - 使用 OpenStreetMap（稳定可靠）
   viewer.imageryLayers.removeAll()
@@ -373,15 +387,28 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('reset-view')
-  window.removeEventListener('toggle-layer')
-  window.removeEventListener('enter-drawing-mode')
-  window.removeEventListener('exit-drawing-mode')
+  if (resetViewListener) {
+    window.removeEventListener('reset-view', resetViewListener)
+  }
+  if (toggleLayerListener) {
+    window.removeEventListener('toggle-layer', toggleLayerListener)
+  }
+  if (enterDrawingModeListener) {
+    window.removeEventListener('enter-drawing-mode', enterDrawingModeListener)
+  }
+  if (exitDrawingModeListener) {
+    window.removeEventListener('exit-drawing-mode', exitDrawingModeListener)
+  }
 
   // 清理点击事件处理器
   if (clickHandler) {
     clickHandler.destroy()
     clickHandler = null
+  }
+
+  if (drawHandler) {
+    drawHandler.destroy()
+    drawHandler = null
   }
 
   if (viewer) {

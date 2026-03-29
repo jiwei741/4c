@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,19 +9,13 @@ INFERENCE_ROOT = REPO_ROOT / "services" / "inference"
 DOCS_ROOT = REPO_ROOT / "docs"
 FEATURES_ROOT = REPO_ROOT / "data" / "processed" / "features" / "nanjing" / "quarterly"
 INFERENCE_DATA_ROOT = REPO_ROOT / "data" / "processed" / "inference"
-SEGMENTATION_ROOT = REPO_ROOT / "data" / "processed" / "segmentation" / "nanjing"
-SEGMENTATION_REMOTE_BUNDLE_ROOT = SEGMENTATION_ROOT / "remote_bundle"
-SEGMENTATION_REMOTE_IMPORT_SUMMARY_PATH = SEGMENTATION_ROOT / "remote_import_summary.json"
-SEGMENTATION_JOB_MANIFEST_PATH = SEGMENTATION_ROOT / "sam2_job_manifest.json"
 
 GRID_NODES_PATH = FEATURES_ROOT / "grid_nodes.csv"
-SENTINEL2_PROXY_FEATURES_PATH = FEATURES_ROOT / "sentinel2_features.csv"
-SENTINEL2_SAM2_FEATURES_PATH = FEATURES_ROOT / "sentinel2_features_from_sam2.csv"
+SENTINEL2_FEATURES_PATH = FEATURES_ROOT / "sentinel2_features.csv"
 ERA5_FEATURES_PATH = FEATURES_ROOT / "era5_features.csv"
 EDGAR_FEATURES_PATH = FEATURES_ROOT / "edgar_features.csv"
 LABELS_PATH = FEATURES_ROOT / "labels_qc_complete.csv"
 BACKEND_RUNTIME_ROOT = REPO_ROOT / "services" / "backend" / "runtime"
-SOURCE_POLICY_PATH = BACKEND_RUNTIME_ROOT / "source_policy.json"
 
 
 @dataclass(frozen=True)
@@ -99,12 +93,12 @@ ARCHITECTURE_LAYERS = (
         "next_fill": "Continue with Sentinel-2 raw download orchestration and database import scripts.",
     },
     {
-        "layer": "Segmentation",
-        "service": "services/segmentation",
-        "owner": "Member B",
-        "status": "remote_only",
-        "current_scope": "Local manifest generation, remote bundle export, and result import pipeline are ready.",
-        "next_fill": "Run real SAM-2 inference on a remote GPU server and export scene-level feature tables.",
+        "layer": "Remote Sensing Features",
+        "service": "services/inference",
+        "owner": "Member A / Member B",
+        "status": "active",
+        "current_scope": "High-precision quarterly Sentinel-2 land-cover features have been normalized into the local training set.",
+        "next_fill": "Continue quarterly feature QA and expand scenario-aware feature engineering when needed.",
     },
     {
         "layer": "Streaming",
@@ -119,8 +113,8 @@ ARCHITECTURE_LAYERS = (
         "service": "services/inference",
         "owner": "Member A",
         "status": "active",
-        "current_scope": "Quarterly LSTM, ST-GNN, multi-step prediction, and scenario simulation are running.",
-        "next_fill": "Switch to SAM-2 derived Sentinel-2 features once remote segmentation outputs are available.",
+        "current_scope": "Quarterly LSTM, ST-GNN, multi-step prediction, and scenario simulation are running on the refined Sentinel-2 feature set.",
+        "next_fill": "Keep iterating on competition-grade experiments and feature selection.",
     },
     {
         "layer": "Backend",
@@ -128,7 +122,7 @@ ARCHITECTURE_LAYERS = (
         "owner": "Member D",
         "status": "active",
         "current_scope": "Dashboard, map layers, scenario execution, and data source status APIs are working.",
-        "next_fill": "Add more management endpoints and integrate remote segmentation result status.",
+        "next_fill": "Keep polishing training artifact visibility and operational status summaries.",
     },
     {
         "layer": "Frontend",
@@ -150,25 +144,25 @@ MEMBER_STATUS = (
             "LSTM baseline",
             "ST-GNN with EDGAR and stronger graph structure",
             "Multi-step prediction",
+            "Refined Sentinel-2 quarterly retraining pipeline",
             "Enhanced scenario simulation",
         ],
         "remaining": [
-            "Rebuild datasets after SAM-2 Sentinel-2 features arrive",
             "Prepare competition-grade experiments and interface notes",
         ],
     },
     {
         "member": "Member B",
-        "role": "Remote sensing, SAM-2, land-cover features",
-        "status": "pending_fill",
+        "role": "Remote sensing and land-cover features",
+        "status": "active",
         "completed": [
             "Sentinel-2 catalog and quarterly proxy features are available",
-            "Remote GPU execution boundary is defined",
+            "High-precision quarterly feature package is available locally",
         ],
         "remaining": [
             "Download raw Sentinel-2 products",
-            "Run SAM-2 inference on remote GPU",
-            "Export scene-level remote sensing feature tables",
+            "Continue land-cover QA and source documentation",
+            "Support future feature engineering for scenario simulation",
         ],
     },
     {
@@ -195,7 +189,7 @@ MEMBER_STATUS = (
         ],
         "remaining": [
             "Add management APIs",
-            "Surface segmentation status and training-source switches",
+            "Surface retraining metadata and dataset provenance",
         ],
     },
     {
@@ -215,12 +209,11 @@ MEMBER_STATUS = (
 )
 
 DOC_REFERENCES = (
-    {"title": "Spatio-Eco Detailed Plan", "path": "Spatio-Eco_详细方案.md", "group": "core"},
-    {"title": "Member AA Data Checklist", "path": "docs/02_成员AA模型训练数据补充清单.md", "group": "algorithm"},
-    {"title": "Nanjing Quarterly Training Plan", "path": "docs/03_南京季度版训练接入方案.md", "group": "algorithm"},
-    {"title": "Platform Boundaries", "path": "docs/12_平台框架与服务边界_2026-03-21.md", "group": "platform"},
-    {"title": "Platform Integration Guide", "path": "docs/13_平台联调与启动说明_2026-03-21.md", "group": "platform"},
-    {"title": "SAM-2 Remote Execution Guide", "path": "docs/14_SAM2远程执行与本地边界_2026-03-21.md", "group": "segmentation"},
+    {"title": "Spatio-Eco Detailed Plan", "path": "Spatio-Eco_璇︾粏鏂规.md", "group": "core"},
+    {"title": "Member AA Data Checklist", "path": "docs/02_鎴愬憳AA妯″瀷璁粌鏁版嵁琛ュ厖娓呭崟.md", "group": "algorithm"},
+    {"title": "Nanjing Quarterly Training Plan", "path": "docs/03_鍗椾含瀛ｅ害鐗堣缁冩帴鍏ユ柟妗?md", "group": "algorithm"},
+    {"title": "Platform Boundaries", "path": "docs/12_骞冲彴妗嗘灦涓庢湇鍔¤竟鐣宊2026-03-21.md", "group": "platform"},
+    {"title": "Platform Integration Guide", "path": "docs/13_骞冲彴鑱旇皟涓庡惎鍔ㄨ鏄巁2026-03-21.md", "group": "platform"},
 )
 
 EXAMPLE_SCENARIOS = {

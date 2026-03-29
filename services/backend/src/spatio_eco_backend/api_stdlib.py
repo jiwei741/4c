@@ -55,10 +55,6 @@ class ApiHandler(BaseHTTPRequestHandler):
                 payload = service.get_data_sources()
             elif path == "/api/v1/admin/platform-status":
                 payload = service.get_platform_status()
-            elif path == "/api/v1/admin/source-policy":
-                payload = service.get_source_policy()
-            elif path == "/api/v1/admin/segmentation-overview":
-                payload = service.get_segmentation_overview()
             elif path == "/api/v1/architecture":
                 payload = {"items": service.get_dashboard()["architecture"]}
             elif path == "/api/v1/study-area/grid-nodes":
@@ -101,15 +97,6 @@ class ApiHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/v1/scenarios/run":
             payload = service.run_scenario(self._read_json_body())
             self._send_json(payload, status=202)
-            return
-
-        if parsed.path == "/api/v1/admin/source-policy":
-            try:
-                payload = service.set_source_policy(self._read_json_body())
-            except ValueError as exc:
-                self._send_json({"error": "bad_request", "detail": str(exc)}, status=400)
-                return
-            self._send_json(payload, status=200)
             return
 
         if parsed.path != "/api/v1/scenarios/run":

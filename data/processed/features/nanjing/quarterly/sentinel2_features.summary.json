@@ -1,4 +1,6 @@
 {
+  "source_grid_path": "D:\\4c\\data_for_memberA\\data_for_memberA\\grid_nodes.csv",
+  "source_features_path": "D:\\4c\\data_for_memberA\\data_for_memberA\\sentinel2_features.csv",
   "grid_rows": 309,
   "feature_rows": 6180,
   "num_nodes": 309,
@@ -24,6 +26,14 @@
     "2024-Q2",
     "2024-Q3",
     "2024-Q4"
+  ],
+  "feature_columns": [
+    "ndvi_mean",
+    "forest_ratio",
+    "farmland_ratio",
+    "water_ratio",
+    "built_ratio",
+    "vegetation_area_ratio"
   ],
   "rows_per_timestamp": {
     "2020-Q1": 309,

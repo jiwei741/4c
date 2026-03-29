@@ -336,6 +336,8 @@
   "feature_names": [
     "vegetation_area_ratio",
     "ndvi_mean",
+    "forest_ratio",
+    "farmland_ratio",
     "water_ratio",
     "built_ratio",
     "land_surface_temperature",
@@ -349,5 +351,10 @@
     "sentinel2",
     "era5",
     "edgar"
-  ]
+  ],
+  "source_paths": {
+    "sentinel2": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\sentinel2_features.csv",
+    "era5": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\era5_features.csv",
+    "edgar": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\edgar_features.csv"
+  }
 }

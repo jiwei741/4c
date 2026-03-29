@@ -9,14 +9,14 @@ grid:
 
 sources:
   sentinel2:
-    path_candidates:
-      - ../../data/processed/features/nanjing/quarterly/sentinel2_features_from_sam2.csv
-      - ../../data/processed/features/nanjing/quarterly/sentinel2_features.csv
+    path: ../../data/processed/features/nanjing/quarterly/sentinel2_features.csv
     timestamp_column: timestamp
     node_id_column: node_id
     feature_columns:
       - vegetation_area_ratio
       - ndvi_mean
+      - forest_ratio
+      - farmland_ratio
       - water_ratio
       - built_ratio
   era5:

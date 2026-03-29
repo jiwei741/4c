@@ -22,12 +22,6 @@ def _not_found(exc: KeyError) -> Any:
     raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-def _bad_request(exc: ValueError) -> Any:
-    if HTTPException is None:
-        raise exc
-    raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-
 def create_app() -> Any:
     if not FASTAPI_AVAILABLE:
         return None
@@ -60,21 +54,6 @@ def create_app() -> Any:
     @app.get("/api/v1/admin/platform-status")
     def platform_status() -> dict[str, Any]:
         return service.get_platform_status()
-
-    @app.get("/api/v1/admin/source-policy")
-    def source_policy() -> dict[str, Any]:
-        return service.get_source_policy()
-
-    @app.post("/api/v1/admin/source-policy")
-    def update_source_policy(payload: dict[str, Any]) -> dict[str, Any]:
-        try:
-            return service.set_source_policy(payload)
-        except ValueError as exc:
-            _bad_request(exc)
-
-    @app.get("/api/v1/admin/segmentation-overview")
-    def segmentation_overview() -> dict[str, Any]:
-        return service.get_segmentation_overview()
 
     @app.get("/api/v1/architecture")
     def architecture() -> dict[str, Any]:

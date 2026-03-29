@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -19,27 +18,14 @@ from .config import (
     LABELS_PATH,
     MEMBER_STATUS,
     MODEL_ARTIFACTS,
-    SEGMENTATION_JOB_MANIFEST_PATH,
-    SEGMENTATION_REMOTE_BUNDLE_ROOT,
-    SEGMENTATION_REMOTE_IMPORT_SUMMARY_PATH,
-    SENTINEL2_PROXY_FEATURES_PATH,
-    SENTINEL2_SAM2_FEATURES_PATH,
-    SOURCE_POLICY_PATH,
+    SENTINEL2_FEATURES_PATH,
     STUDY_AREA,
 )
 from .inference_runner import run_live_scenario
 
-SUPPORTED_SENTINEL2_SOURCE_KEYS = ("quarterly_proxy", "sam2_remote")
-
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _json_or_none(path: Path) -> dict[str, Any] | None:
-    if not path.exists():
-        return None
-    return _load_json(path)
 
 
 def _file_size_mb(path: Path) -> float:
@@ -190,212 +176,31 @@ def _scenario_summary(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _latest_remote_bundle_dir() -> Path | None:
-    if not SEGMENTATION_REMOTE_BUNDLE_ROOT.exists():
-        return None
-    candidates = [item for item in SEGMENTATION_REMOTE_BUNDLE_ROOT.iterdir() if item.is_dir()]
-    if not candidates:
-        return None
-    return sorted(candidates, key=lambda item: item.name)[-1]
-
-
-def _default_source_policy() -> dict[str, Any]:
+def _sentinel2_source_status() -> dict[str, Any]:
+    rows = _csv_row_count(SENTINEL2_FEATURES_PATH)
     return {
-        "mode": "auto",
-        "preferred_source_key": None,
-        "updated_at": None,
-    }
-
-
-def _read_source_policy() -> dict[str, Any]:
-    payload = _default_source_policy()
-    if SOURCE_POLICY_PATH.exists():
-        try:
-            raw = _load_json(SOURCE_POLICY_PATH)
-        except json.JSONDecodeError:
-            raw = {}
-        mode = str(raw.get("mode", payload["mode"])).strip().lower()
-        preferred = raw.get("preferred_source_key")
-        if mode in {"auto", "manual"}:
-            payload["mode"] = mode
-        if preferred in SUPPORTED_SENTINEL2_SOURCE_KEYS:
-            payload["preferred_source_key"] = preferred
-        payload["updated_at"] = raw.get("updated_at")
-    return payload
-
-
-def _write_source_policy(mode: str, preferred_source_key: str | None) -> dict[str, Any]:
-    BACKEND_RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "mode": mode,
-        "preferred_source_key": preferred_source_key,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-    }
-    SOURCE_POLICY_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    return payload
-
-
-def _sentinel2_source_items() -> list[dict[str, Any]]:
-    sources = [
-        {
-            "key": "quarterly_proxy",
-            "name": "Quarterly Proxy Features",
-            "path": SENTINEL2_PROXY_FEATURES_PATH,
-            "description": "Local quarterly Sentinel-2 proxy features that currently support training and platform demos.",
-            "stage": "available",
-        },
-        {
-            "key": "sam2_remote",
-            "name": "Remote SAM-2 Features",
-            "path": SENTINEL2_SAM2_FEATURES_PATH,
-            "description": "Remote GPU generated SAM-2 feature table. This source becomes active automatically when the CSV is present.",
-            "stage": "preferred_when_ready",
-        },
-    ]
-    items: list[dict[str, Any]] = []
-    for source in sources:
-        rows = _csv_row_count(source["path"])
-        available = source["path"].exists() and rows > 0
-        items.append(
-            {
-                "key": source["key"],
-                "name": source["name"],
-                "path": str(source["path"]),
-                "rows": rows,
-                "exists": source["path"].exists(),
-                "available": available,
-                "stage": source["stage"],
-                "description": source["description"],
-            }
-        )
-    return items
-
-
-def _effective_sentinel2_switch() -> dict[str, Any]:
-    policy = _read_source_policy()
-    items = _sentinel2_source_items()
-    item_lookup = {item["key"]: item for item in items}
-
-    auto_item = item_lookup["quarterly_proxy"]
-    if item_lookup["sam2_remote"]["available"]:
-        auto_item = item_lookup["sam2_remote"]
-
-    effective_mode = "auto"
-    effective_reason = "fallback_to_quarterly_proxy"
-    active_item = auto_item
-
-    if auto_item["key"] == "sam2_remote":
-        effective_reason = "sam2_remote_ready"
-
-    if policy["mode"] == "manual" and policy["preferred_source_key"] in item_lookup:
-        preferred_item = item_lookup[policy["preferred_source_key"]]
-        if preferred_item["available"]:
-            active_item = preferred_item
-            effective_mode = "manual"
-            effective_reason = "manual_preference_applied"
-        else:
-            effective_mode = "auto_fallback"
-            effective_reason = "manual_preference_unavailable"
-
-    return {
-        "policy": policy,
-        "effective_mode": effective_mode,
-        "effective_reason": effective_reason,
-        "active_key": active_item["key"],
-        "active_name": active_item["name"],
-        "active_path": active_item["path"],
-        "can_switch_to_sam2": item_lookup["sam2_remote"]["available"],
-        "switch_rule": "Auto uses SAM-2 when available. Manual mode can pin quarterly_proxy or sam2_remote when the selected source is ready.",
-        "items": items,
-    }
-
-
-def get_source_policy() -> dict[str, Any]:
-    switch = _effective_sentinel2_switch()
-    return {
-        "policy": switch["policy"],
-        "effective_mode": switch["effective_mode"],
-        "effective_reason": switch["effective_reason"],
-        "active_key": switch["active_key"],
-        "active_name": switch["active_name"],
-        "active_path": switch["active_path"],
-        "can_switch_to_sam2": switch["can_switch_to_sam2"],
-        "options": switch["items"],
-    }
-
-
-def set_source_policy(payload: dict[str, Any]) -> dict[str, Any]:
-    mode = str(payload.get("mode", "auto")).strip().lower()
-    preferred = payload.get("preferred_source_key")
-
-    if mode not in {"auto", "manual"}:
-        raise ValueError("mode must be 'auto' or 'manual'")
-    if mode == "manual" and preferred not in SUPPORTED_SENTINEL2_SOURCE_KEYS:
-        raise ValueError("preferred_source_key must be one of quarterly_proxy or sam2_remote")
-    if mode == "auto":
-        preferred = None
-
-    _write_source_policy(mode, preferred)
-    return get_source_policy()
-
-
-def get_segmentation_overview() -> dict[str, Any]:
-    latest_bundle = _latest_remote_bundle_dir()
-    latest_bundle_manifest = None
-    if latest_bundle is not None and (latest_bundle / "sam2_job_manifest.json").exists():
-        latest_bundle_manifest = _load_json(latest_bundle / "sam2_job_manifest.json")
-    import_summary = _json_or_none(SEGMENTATION_REMOTE_IMPORT_SUMMARY_PATH) or {}
-
-    job_count = int(latest_bundle_manifest.get("job_count", 0)) if latest_bundle_manifest else 0
-    complete_scene_count = int(import_summary.get("complete_scene_count", 0))
-    missing_scene_ids = list(import_summary.get("missing_scene_ids", []))
-    completion_rate = 0.0
-    if job_count > 0:
-        completion_rate = round(complete_scene_count / job_count, 4)
-
-    sam2_rows = _csv_row_count(SENTINEL2_SAM2_FEATURES_PATH)
-    next_action = "export_remote_bundle"
-    if latest_bundle_manifest and complete_scene_count == 0:
-        next_action = "wait_for_remote_results"
-    if complete_scene_count > 0:
-        next_action = "import_remote_outputs"
-    if sam2_rows > 0:
-        next_action = "sam2_features_ready_for_training"
-
-    return {
-        "latest_bundle_dir": str(latest_bundle) if latest_bundle else None,
-        "manifest": latest_bundle_manifest,
-        "import_summary_path": str(SEGMENTATION_REMOTE_IMPORT_SUMMARY_PATH),
-        "import_summary": import_summary or None,
-        "job_manifest_path": str(SEGMENTATION_JOB_MANIFEST_PATH),
-        "job_manifest_exists": SEGMENTATION_JOB_MANIFEST_PATH.exists() or latest_bundle_manifest is not None,
-        "job_count": job_count,
-        "complete_scene_count": complete_scene_count,
-        "missing_scene_count": len(missing_scene_ids),
-        "missing_scene_ids": missing_scene_ids,
-        "completion_rate": completion_rate,
-        "sam2_feature_rows": sam2_rows,
-        "sam2_feature_path": str(SENTINEL2_SAM2_FEATURES_PATH),
-        "sam2_feature_ready": sam2_rows > 0,
-        "next_action": next_action,
+        "key": "sentinel2",
+        "name": "Sentinel-2 Quarterly Features",
+        "owner": "Member A / Member B",
+        "required_for": ["training", "map_display", "scenario"],
+        "active_source": "local_highres_quarterly",
+        "active_path": str(SENTINEL2_FEATURES_PATH),
+        "available": SENTINEL2_FEATURES_PATH.exists() and rows > 0,
+        "rows": rows,
+        "description": "High-precision quarterly Sentinel-2 land-cover features normalized from the Member A delivery package.",
+        **_path_status(
+            SENTINEL2_FEATURES_PATH,
+            kind="csv",
+            owner="Member A / Member B",
+            description="High-precision quarterly Sentinel-2 land-cover features normalized for model training and platform display.",
+        ),
     }
 
 
 def get_data_sources() -> dict[str, Any]:
-    sentinel2 = _effective_sentinel2_switch()
-    segmentation_status = get_segmentation_overview()
+    sentinel2 = _sentinel2_source_status()
     items = [
-        {
-            "key": "sentinel2",
-            "name": "Sentinel-2 Features",
-            "owner": "Member B",
-            "required_for": ["segmentation", "training", "map_display"],
-            "active_source": sentinel2["active_key"],
-            "active_path": sentinel2["active_path"],
-            "effective_mode": sentinel2["effective_mode"],
-            "effective_reason": sentinel2["effective_reason"],
-            "sources": sentinel2["items"],
-        },
+        sentinel2,
         {
             "key": "era5",
             "name": "ERA5 Quarterly Features",
@@ -435,8 +240,6 @@ def get_data_sources() -> dict[str, Any]:
     ]
     return {
         "study_area": STUDY_AREA["name"],
-        "sentinel2_switch": sentinel2,
-        "segmentation_remote": segmentation_status,
         "items": items,
     }
 
@@ -444,7 +247,6 @@ def get_data_sources() -> dict[str, Any]:
 def get_platform_status() -> dict[str, Any]:
     data_sources = get_data_sources()
     models = list_models()
-    segmentation = data_sources["segmentation_remote"]
 
     service_counts = {
         "total": len(ARCHITECTURE_LAYERS),
@@ -453,21 +255,14 @@ def get_platform_status() -> dict[str, Any]:
         "pending_fill": sum(1 for item in ARCHITECTURE_LAYERS if item["status"] in {"pending_fill", "remote_only"}),
     }
 
-    ready_data_count = sum(
-        1
-        for item in data_sources["items"]
-        if item["key"] == "sentinel2"
-        or item.get("exists")
-    )
+    ready_data_count = sum(1 for item in data_sources["items"] if item.get("exists"))
 
     model_leader = min(models, key=lambda item: float(item["metrics"]["rmse"]))
     recommendations = []
-    if not data_sources["sentinel2_switch"]["can_switch_to_sam2"]:
-        recommendations.append("Keep using quarterly_proxy until remote SAM-2 features are imported.")
-    if segmentation["job_count"] > 0 and segmentation["complete_scene_count"] < segmentation["job_count"]:
-        recommendations.append("Remote segmentation jobs are still incomplete. Wait for more scene outputs.")
-    if segmentation["sam2_feature_ready"]:
-        recommendations.append("SAM-2 feature CSV is ready. Rebuild training datasets when you want to switch inputs.")
+    if data_sources["items"][0].get("exists"):
+        recommendations.append("High-precision quarterly Sentinel-2 features are active for current training and demo outputs.")
+    if models:
+        recommendations.append("Current model artifacts are aligned to the refined quarterly dataset.")
     if not recommendations:
         recommendations.append("Platform data sources and artifacts are in a stable state.")
 
@@ -477,8 +272,7 @@ def get_platform_status() -> dict[str, Any]:
         "data_summary": {
             "ready_data_count": ready_data_count,
             "tracked_data_count": len(data_sources["items"]),
-            "active_sentinel2_source": data_sources["sentinel2_switch"]["active_key"],
-            "effective_source_mode": data_sources["sentinel2_switch"]["effective_mode"],
+            "active_sentinel2_source": data_sources["items"][0]["active_source"],
         },
         "model_summary": {
             "count": len(models),
@@ -487,14 +281,6 @@ def get_platform_status() -> dict[str, Any]:
             "leader_rmse": model_leader["metrics"]["rmse"],
             "leader_mae": model_leader["metrics"]["mae"],
         },
-        "segmentation_summary": {
-            "job_count": segmentation["job_count"],
-            "complete_scene_count": segmentation["complete_scene_count"],
-            "completion_rate": segmentation["completion_rate"],
-            "sam2_feature_ready": segmentation["sam2_feature_ready"],
-            "next_action": segmentation["next_action"],
-        },
-        "source_policy": get_source_policy(),
         "recommendations": recommendations,
     }
 
@@ -773,7 +559,7 @@ def get_dashboard() -> dict[str, Any]:
             "subtitle": "Regional carbon-sink monitoring and forecasting platform",
             "phase": "Platform MVP",
             "study_area": STUDY_AREA,
-            "sentinel2_feature_source": data_sources["sentinel2_switch"]["active_key"],
+            "sentinel2_feature_source": data_sources["items"][0]["active_source"],
         },
         "architecture": list(ARCHITECTURE_LAYERS),
         "members": list(MEMBER_STATUS),
@@ -790,8 +576,8 @@ def get_dashboard() -> dict[str, Any]:
         "docs": list(DOC_REFERENCES),
         "roadmap": [
             "Continue local work on backend, frontend, data ingestion, and inference.",
-            "Keep real SAM-2 execution on a remote GPU server instead of this laptop.",
-            "Switch the training source to sentinel2_features_from_sam2.csv once remote segmentation results are imported.",
+            "Keep the refined quarterly Sentinel-2 feature table as the current training source.",
+            "Iterate on retraining, evaluation, and scenario calibration with the richer land-cover features.",
             "Keep improving platform integration and competition demo views.",
         ],
     }

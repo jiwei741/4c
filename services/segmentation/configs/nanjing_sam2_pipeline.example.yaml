@@ -1,8 +1,0 @@
-study_area: nanjing
-model_variant: sam2-automatic-mask-generation
-input_asset_dir: data/raw/sentinel2/nanjing
-output_mask_dir: data/processed/segmentation/nanjing/masks
-output_feature_csv: data/processed/features/nanjing/quarterly/sentinel2_features.csv
-semantic_reference:
-  - ESA_CCI
-  - ESA_WorldCover

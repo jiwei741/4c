@@ -1,111 +1,85 @@
-# Spatio-Eco
+﻿# Spatio-Eco
 
-Spatio-Eco 是一个面向双碳与生态监测场景的时空平台原型。当前仓库已经具备：
+Spatio-Eco 是一个面向区域碳汇监测、预测与情景推演的时空平台原型。当前仓库已经收敛到一条更清晰的本地链路：
 
-- 季度版模型训练与推理链路
-- 后端 API、情景推演和平台管理接口
-- 前端业务工作台与中英文切换
-- `SAM-2` 远程执行边界与结果回传骨架
+- 使用高精度季度 Sentinel-2 地类特征进行训练与展示
+- 提供可直接联调的后端 API、前端页面和情景推演能力
+- 保留数据接入与流式处理骨架，当前主链路只保留必要模块
 
-当前定位是：**本地可运行的平台 MVP + 远程 GPU 执行的遥感分割流程**。
+## 当前范围
 
-## 当前结构
+- 季度训练数据与模型产物已经就绪
+- 后端直接聚合 `services/inference/outputs` 中的模型结果
+- 前端使用 Vue 3 + Vite + Cesium
+- Sentinel-2 当前正式来源为本地 refined quarterly 数据表
+
+## 目录结构
 
 - `services/inference/`
-  成员 A 算法、训练、推理、情景推演
+  模型训练、预测、情景推演与数据拼接
 - `services/backend/`
   平台后端 API
 - `services/frontend/`
-  前端业务工作台
+  前端可视化页面
 - `services/data_ingestion/`
-  数据接入与下载入口
-- `services/segmentation/`
-  `SAM-2` 任务清单、远程 bundle、结果导回
+  数据接入与下载入口骨架
 - `services/streaming/`
-  Kafka / Flink 骨架
+  流式处理与数据库侧骨架
+- `data/processed/features/`
+  当前用于训练和展示的处理后特征
+- `data/processed/inference/`
+  训练集 NPZ 与元数据
 - `docs/`
-  项目说明、训练记录、平台说明、远程执行说明
+  训练记录、平台说明与发布清单
 - `scripts/`
-  平台启动、联调测试和辅助脚本
+  启停、联调与辅助脚本
 
-## 本地与远程边界
+## 数据说明
 
-本地负责：
+- 当前正式使用的季度 Sentinel-2 特征表：
+  [sentinel2_features.csv](data/processed/features/nanjing/quarterly/sentinel2_features.csv)
+- 这份表由 `data_for_memberA` 中的高精度季度源数据标准化生成
+- `time_analysis.csv` 属于同源扩展表，已经视为重复副本，不再作为训练输入
 
-- 平台开发与联调
-- 成员 A 模型训练与推理
-- 后端、前端、数据接入骨架
-- `SAM-2` 远程任务准备和结果导入
-
-远程 GPU 负责：
-
-- 真实 `SAM-2` 批量推理
-- 大规模 `Sentinel-2` 原始影像分割
-
-说明见：
-
-- [平台联调与启动说明](docs/13_平台联调与启动说明_2026-03-21.md)
-- [SAM-2 远程执行与本地边界](docs/14_SAM2远程执行与本地边界_2026-03-21.md)
-
-## 快速启动
-
+## 一键启动
 要求：
-
 - Windows + PowerShell
-- 已安装 `uv`
-- 本地已创建 `.env`
+- `uv`
+- Node.js `^20.19.0 || >=22.12.0`
+- 根目录存在 `.env`
+- 端口 `8000`、`4173` 可用
 
 启动：
-
 ```powershell
 cd d:\4c
 powershell -ExecutionPolicy Bypass -File scripts/start_platform.ps1
 ```
 
-启动后自动打印：
-
-- 前端地址
-- 后端健康检查地址
-
-启动成功后会自动打开浏览器；如需跳过：
+跳过自动打开浏览器：
 
 ```powershell
 cd d:\4c
 powershell -ExecutionPolicy Bypass -File scripts/start_platform.ps1 -NoBrowser
 ```
 
-联调测试：
+停止：
+```powershell
+cd d:\4c
+powershell -ExecutionPolicy Bypass -File scripts/stop_platform.ps1
+```
+
+联调检查：
 
 ```powershell
 cd d:\4c
 python scripts/test_platform_integration.py
 ```
 
-停止：
+## 访问地址
 
-```powershell
-cd d:\4c
-powershell -ExecutionPolicy Bypass -File scripts/stop_platform.ps1
-```
-
-## 前端页面
-
-- `/`
-  平台总览
-- `/models.html`
-  模型指标与预测结果
-- `/operations.html`
-  数据源策略、远程分割状态、平台运维信息
-- `/research.html`
-  文档、成员边界、路线图
-
-## 环境变量
-
-示例模板见：
-
-- [`.env.example`](.env.example)
-
-实际密钥与账号只写入本地 `.env`，不要提交到仓库。
+- 前端：<http://127.0.0.1:4173/>
+- 后端健康检查：<http://127.0.0.1:8000/api/v1/health>
+- 平台总览：<http://127.0.0.1:8000/api/v1/dashboard>
 
 ## 文档入口
 
@@ -114,23 +88,10 @@ powershell -ExecutionPolicy Bypass -File scripts/stop_platform.ps1
 - [南京季度版训练接入方案](docs/03_南京季度版训练接入方案.md)
 - [平台框架与服务边界](docs/12_平台框架与服务边界_2026-03-21.md)
 - [平台联调与启动说明](docs/13_平台联调与启动说明_2026-03-21.md)
-- [SAM-2 远程执行与本地边界](docs/14_SAM2远程执行与本地边界_2026-03-21.md)
-
-## Public 仓库说明
-
-当前仓库已按公开发布方向整理：
-
-- `.env` 不纳入版本控制
-- 原始数据、日志、缓存、远程实验目录已默认忽略
-- 为了让 public 仓库可直接演示，已保留小体量的处理后特征与模型输出
-- 根 README 和 `.env.example` 已补齐
-
-但仍建议在真正推送前完成：
-
-1. 选择并补一个开源许可证
-2. 初始化 git 并检查 `git status --ignored`
-3. 确认不上传本地账号、缓存、数据和临时日志
-
-公开发布检查清单见：
-
 - [Public 仓库发布清单](docs/15_Public仓库发布清单_2026-03-22.md)
+
+## 当前说明
+
+- 当前仓库默认使用本地 refined quarterly Sentinel-2 特征
+- 后端接口已经收口为当前平台所需的最小集合
+- 旧的远程分割原型和旧页面目录已经从主链路移除

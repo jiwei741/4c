@@ -10,11 +10,13 @@ logs/
 *.log
 
 data/raw/
+data_for_memberA/
 data/processed/segmentation/
 remote_sensing_output/
 remote_sensing_output_ver.03.20/
 external/
 services/backend/runtime/
+time_analysis.csv
 
 *.SAFE
 *.SAFE/

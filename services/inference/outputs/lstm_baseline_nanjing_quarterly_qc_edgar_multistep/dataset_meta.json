@@ -1,7 +1,7 @@
 {
   "num_timesteps": 20,
   "num_nodes": 309,
-  "num_features": 9,
+  "num_features": 11,
   "target_dim": 1,
   "node_ids": [
     "1",
@@ -317,6 +317,8 @@
   "feature_names": [
     "vegetation_area_ratio",
     "ndvi_mean",
+    "forest_ratio",
+    "farmland_ratio",
     "water_ratio",
     "built_ratio",
     "land_surface_temperature",

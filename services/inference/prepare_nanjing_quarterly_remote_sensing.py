@@ -14,6 +14,7 @@ if str(SRC_ROOT) not in sys.path:
 
 from spatio_eco_inference.quarterly_utils import (
     load_grid_records,
+    normalize_quarter_label,
     normalize_node_id,
     read_csv_rows,
     quarter_sort_key,
@@ -22,16 +23,16 @@ from spatio_eco_inference.quarterly_utils import (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Normalize quarterly remote sensing inputs for Nanjing 309-grid training.")
+    parser = argparse.ArgumentParser(description="Normalize high-precision quarterly Sentinel-2 inputs for Nanjing 309-grid training.")
     parser.add_argument(
         "--grid-input",
         type=Path,
-        default=PROJECT_ROOT / "remote_sensing_output_ver.03.20/remote_sensing_output_ver.03.20/grid_nodes.csv",
+        default=PROJECT_ROOT / "data_for_memberA/data_for_memberA/grid_nodes.csv",
     )
     parser.add_argument(
         "--features-input",
         type=Path,
-        default=PROJECT_ROOT / "remote_sensing_output_ver.03.20/remote_sensing_output_ver.03.20/nanjing_sentinel2_features_quarterly_2020_2024.csv",
+        default=PROJECT_ROOT / "data_for_memberA/data_for_memberA/sentinel2_features.csv",
     )
     parser.add_argument(
         "--output-dir",
@@ -72,13 +73,19 @@ def main() -> None:
 
     normalized_features = []
     for row in feature_rows:
+        timestamp = normalize_quarter_label(row["timestamp"])
+        year_str, quarter_token = timestamp.split("-Q", 1)
         normalized_features.append(
             {
+                "timestamp": timestamp,
                 "node_id": normalize_node_id(row["node_id"]),
-                "timestamp": row["timestamp"].strip(),
-                "built_ratio": row.get("built_ratio", "").strip(),
+                "year": row.get("year", "").strip() or year_str,
+                "quarter": row.get("quarter", "").strip() or f"Q{quarter_token}",
                 "ndvi_mean": row.get("ndvi_mean", "").strip(),
+                "forest_ratio": row.get("forest_ratio", "").strip(),
+                "farmland_ratio": row.get("farmland_ratio", "").strip(),
                 "water_ratio": row.get("water_ratio", "").strip(),
+                "built_ratio": row.get("built_ratio", "").strip(),
                 "vegetation_area_ratio": row.get("vegetation_area_ratio", "").strip(),
             }
         )
@@ -87,7 +94,18 @@ def main() -> None:
 
     write_csv_rows(
         clean_features_path,
-        ["node_id", "timestamp", "built_ratio", "ndvi_mean", "water_ratio", "vegetation_area_ratio"],
+        [
+            "timestamp",
+            "node_id",
+            "year",
+            "quarter",
+            "ndvi_mean",
+            "forest_ratio",
+            "farmland_ratio",
+            "water_ratio",
+            "built_ratio",
+            "vegetation_area_ratio",
+        ],
         normalized_features,
     )
 
@@ -95,11 +113,21 @@ def main() -> None:
     node_ids = {row["node_id"] for row in normalized_features}
     counts = Counter(row["timestamp"] for row in normalized_features)
     summary = {
+        "source_grid_path": str(args.grid_input),
+        "source_features_path": str(args.features_input),
         "grid_rows": len(grid_records),
         "feature_rows": len(normalized_features),
         "num_nodes": len(node_ids),
         "num_timestamps": len(timestamps),
         "timestamps": timestamps,
+        "feature_columns": [
+            "ndvi_mean",
+            "forest_ratio",
+            "farmland_ratio",
+            "water_ratio",
+            "built_ratio",
+            "vegetation_area_ratio",
+        ],
         "rows_per_timestamp": dict(sorted(counts.items(), key=lambda item: quarter_sort_key(item[0]))),
         "clean_grid_path": str(clean_grid_path),
         "clean_features_path": str(clean_features_path),

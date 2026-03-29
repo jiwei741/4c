@@ -38,6 +38,17 @@ def normalize_node_id(raw_value: str) -> str:
     return value
 
 
+def normalize_quarter_label(raw_value: str) -> str:
+    value = str(raw_value).strip()
+    if "_Q" in value:
+        year_str, quarter_str = value.split("_Q", 1)
+        return f"{int(year_str):04d}-Q{int(quarter_str)}"
+    if "-Q" in value:
+        year_str, quarter_str = value.split("-Q", 1)
+        return f"{int(year_str):04d}-Q{int(quarter_str)}"
+    return value
+
+
 def load_grid_records(path: Path) -> list[GridRecord]:
     rows = read_csv_rows(path)
     records: list[GridRecord] = []
@@ -57,7 +68,7 @@ def load_grid_records(path: Path) -> list[GridRecord]:
 
 
 def parse_date_like(text: str) -> tuple[int, int]:
-    value = text.strip()
+    value = normalize_quarter_label(text)
     if "-Q" in value:
         year_str, quarter_str = value.split("-Q", 1)
         month = (int(quarter_str) - 1) * 3 + 1
@@ -82,7 +93,8 @@ def to_quarter_label(year: int, month: int) -> str:
 
 
 def quarter_sort_key(label: str) -> tuple[int, int]:
-    year_str, quarter_str = label.split("-Q", 1)
+    normalized = normalize_quarter_label(label)
+    year_str, quarter_str = normalized.split("-Q", 1)
     return int(year_str), int(quarter_str)
 
 

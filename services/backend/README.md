@@ -7,6 +7,7 @@
 - Expose the trained model outputs produced by `services/inference`
 - Provide dashboard, map layer, scenario, and data-source status APIs
 - Bridge the frontend to local inference artifacts before the full database stack is ready
+- Track the refined quarterly Sentinel-2 feature source now used by training and demos
 
 ## Available APIs
 
@@ -14,9 +15,6 @@
 - `GET /api/v1/dashboard`
 - `GET /api/v1/data-sources`
 - `GET /api/v1/admin/platform-status`
-- `GET /api/v1/admin/source-policy`
-- `POST /api/v1/admin/source-policy`
-- `GET /api/v1/admin/segmentation-overview`
 - `GET /api/v1/architecture`
 - `GET /api/v1/study-area/grid-nodes`
 - `GET /api/v1/members`
@@ -38,8 +36,6 @@ This MVP reads files directly instead of querying PostGIS:
 - `services/inference/outputs/*/enhanced_scenario.json`
 - `services/inference/examples/*.json`
 - `data/processed/features/nanjing/quarterly/*.csv`
-- `data/processed/segmentation/nanjing/remote_import_summary.json`
-- `services/backend/runtime/source_policy.json`
 
 ## Run
 
@@ -69,6 +65,6 @@ Then `POST /api/v1/scenarios/run` will use that interpreter to execute [run_scen
 ## Next Fill
 
 - Expand management APIs only after database-backed state is introduced
-- Surface remote SAM-2 import progress at scene level when files arrive
+- Surface retraining provenance and richer dataset metadata when needed
 - Replace file-backed reads with database-backed queries
-- Wire in real streaming and segmentation outputs as they become available
+- Wire in real streaming outputs as they become available

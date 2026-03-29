@@ -92,7 +92,7 @@
 
         <button
           v-if="step === 'config'"
-          @click="step = 'draw'"
+          @click="redrawArea"
           class="btn btn-secondary"
         >
           ← 重新绘制
@@ -182,13 +182,19 @@ function reset() {
   emissionMultiplier.value = 5.0
   predictionYears.value = 3
   result.value = null
+  exitDrawingMode()
 }
 
 function startDrawing() {
+  exitDrawingMode()
   step.value = 'draw'
   selectedArea.value = null
   // 通知 CesiumViewer 进入绘制模式
   window.dispatchEvent(new CustomEvent('enter-drawing-mode'))
+}
+
+function redrawArea() {
+  startDrawing()
 }
 
 function cancelDrawing() {
