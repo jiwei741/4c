@@ -285,26 +285,74 @@ function setupClickHandler() {
 }
 
 
-onMounted(() => {
-  viewer = new Cesium.Viewer(cesiumContainer.value, {
-    animation: false,
-    baseLayerPicker: false,
-    fullscreenButton: false,
-    geocoder: false,
-    homeButton: false,
-    infoBox: false,
-    sceneModePicker: false,
-    selectionIndicator: false,
-    timeline: false,
-    navigationHelpButton: false,
-  })
+onMounted(async () => {
+  console.log('=== CesiumViewer onMounted 开始 ===')
+
+  // 等待 DOM 完全渲染
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  console.log('cesiumContainer.value:', cesiumContainer.value)
+  if (!cesiumContainer.value) {
+    console.error('❌ cesiumContainer.value 是 null!')
+    return
+  }
+
+  const rect = cesiumContainer.value.getBoundingClientRect()
+  console.log('container尺寸:', rect.width, 'x', rect.height)
+
+  if (rect.width === 0 || rect.height === 0) {
+    console.error('❌ 容器尺寸为 0，无法渲染!')
+  }
+
+  // 使用高德地图（国内稳定，不需要 token）
+  try {
+    console.log('开始创建 viewer...')
+
+    viewer = new Cesium.Viewer(cesiumContainer.value, {
+      baseLayer: false,
+      baseLayerPicker: false,
+      geocoder: false,
+      homeButton: false,
+      sceneModePicker: false,
+      timeline: false,
+      animation: false,
+      fullscreenButton: false,
+      infoBox: false,
+      selectionIndicator: false,
+      navigationHelpButton: false,
+    })
+    console.log('✓ Viewer created')
+
+    // 高德矢量地图
+    const gaodeLayer = new Cesium.UrlTemplateImageryProvider({
+      url: 'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      minimumLevel: 3,
+      maximumLevel: 18
+    })
+    viewer.imageryLayers.addImageryProvider(gaodeLayer)
+    console.log('✓ 高德地图已添加（包含中文地名）')
+
+    console.log('  - scene:', !!viewer.scene)
+    console.log('  - canvas:', viewer.canvas)
+
+    // 等待渲染
+    viewer.scene.postRender.addEventListener(() => {
+      console.log('✓ Scene rendered')
+    })
+
+  } catch (error) {
+    console.error('❌ Viewer 创建失败:', error)
+    return
+  }
 
   // 监听重置视图事件
   window.addEventListener('reset-view', () => {
-    viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 80000),
-      duration: 1.5
-    })
+    if (viewer) {
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 80000),
+        duration: 1.5
+      })
+    }
   })
 
   // 监听切换图层事件
@@ -320,14 +368,6 @@ onMounted(() => {
   window.addEventListener('exit-drawing-mode', () => {
     exitDrawingMode()
   })
-
-  // 添加底图 - 使用 OpenStreetMap（稳定可靠）
-  viewer.imageryLayers.removeAll()
-  viewer.imageryLayers.addImageryProvider(
-    new Cesium.OpenStreetMapImageryProvider({
-      url: 'https://tile.openstreetmap.org/'
-    })
-  )
 
   viewerReady.value = viewer
 
@@ -367,11 +407,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('reset-view')
-  window.removeEventListener('toggle-layer')
-  window.removeEventListener('enter-drawing-mode')
-  window.removeEventListener('exit-drawing-mode')
-
   // 清理点击事件处理器
   if (clickHandler) {
     clickHandler.destroy()
@@ -393,5 +428,17 @@ onUnmounted(() => {
 .cesium-container {
   width: 100vw;
   height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  background: #000;
+}
+
+/* 确保Cesium的canvas可见 */
+.cesium-container :deep(canvas) {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 </style>
