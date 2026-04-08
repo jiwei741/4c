@@ -1,0 +1,104 @@
+{
+  "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep",
+  "seeds": [
+    7,
+    21,
+    42,
+    77,
+    3407
+  ],
+  "num_runs": 5,
+  "prediction_constraints": {
+    "min_value": 0.0
+  },
+  "aggregate": {
+    "mae_mean": 0.04983453191816807,
+    "mae_std": 0.0032773930089842972,
+    "mae_min": 0.04520708881318569,
+    "mae_max": 0.0543174222111702,
+    "rmse_mean": 0.06490136198699474,
+    "rmse_std": 0.0038619448704033527,
+    "rmse_min": 0.059900570660829544,
+    "rmse_max": 0.07050799578428268
+  },
+  "best_run_by_rmse": {
+    "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep_seed_42",
+    "output_dir": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_42",
+    "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_42\\best.pt",
+    "best_val_loss": 0.1495904934902986,
+    "test_metrics": {
+      "mae": 0.04520708881318569,
+      "rmse": 0.059900570660829544
+    },
+    "device": "cuda",
+    "dataset_path": "..\\..\\data\\processed\\inference\\nanjing_quarterly_qc_edgar_hybrid_v1.npz",
+    "seed": 42
+  },
+  "runs": [
+    {
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep_seed_7",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_7",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_7\\best.pt",
+      "best_val_loss": 0.15739116196831068,
+      "test_metrics": {
+        "mae": 0.04959935322403908,
+        "rmse": 0.06316457130014896
+      },
+      "device": "cuda",
+      "dataset_path": "..\\..\\data\\processed\\inference\\nanjing_quarterly_qc_edgar_hybrid_v1.npz",
+      "seed": 7
+    },
+    {
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep_seed_21",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_21",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_21\\best.pt",
+      "best_val_loss": 0.15165999283393225,
+      "test_metrics": {
+        "mae": 0.0543174222111702,
+        "rmse": 0.07050799578428268
+      },
+      "device": "cuda",
+      "dataset_path": "..\\..\\data\\processed\\inference\\nanjing_quarterly_qc_edgar_hybrid_v1.npz",
+      "seed": 21
+    },
+    {
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep_seed_42",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_42",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_42\\best.pt",
+      "best_val_loss": 0.1495904934902986,
+      "test_metrics": {
+        "mae": 0.04520708881318569,
+        "rmse": 0.059900570660829544
+      },
+      "device": "cuda",
+      "dataset_path": "..\\..\\data\\processed\\inference\\nanjing_quarterly_qc_edgar_hybrid_v1.npz",
+      "seed": 42
+    },
+    {
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep_seed_77",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_77",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_77\\best.pt",
+      "best_val_loss": 0.1662512111167113,
+      "test_metrics": {
+        "mae": 0.05248097889125347,
+        "rmse": 0.06815708428621292
+      },
+      "device": "cuda",
+      "dataset_path": "..\\..\\data\\processed\\inference\\nanjing_quarterly_qc_edgar_hybrid_v1.npz",
+      "seed": 77
+    },
+    {
+      "experiment_name": "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep_seed_3407",
+      "output_dir": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_3407",
+      "checkpoint_path": "D:\\4c\\services\\inference\\outputs\\multi_seed\\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep\\seed_3407\\best.pt",
+      "best_val_loss": 0.14883187537391981,
+      "test_metrics": {
+        "mae": 0.0475678164511919,
+        "rmse": 0.0627765879034996
+      },
+      "device": "cuda",
+      "dataset_path": "..\\..\\data\\processed\\inference\\nanjing_quarterly_qc_edgar_hybrid_v1.npz",
+      "seed": 3407
+    }
+  ]
+}

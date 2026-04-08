@@ -1,0 +1,28 @@
+experiment_name: stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep__combo_038__seed_42
+model:
+  name: stgnn_gcn_lstm
+  graph_hidden_dim: 32
+  temporal_hidden_dim: 64
+  lstm_layers: 1
+  dropout: 0.1
+data:
+  input_window: 4
+  horizon: 2
+  target_dim: 1
+training:
+  batch_size: 2
+  epochs: 50
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  feature_normalization: true
+  target_normalization: true
+  target_transform:
+    name: identity
+  prediction_constraints:
+    min_value: 0.0
+  train_ratio: 0.6
+  val_ratio: 0.2
+  seed: 42
+  device: auto
+output:
+  dir: D:\4c\services\inference\outputs\adjacency_sweep\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep__nanjing_quarterly_qc_edgar_hybrid\combo_038\training\seed_42

@@ -1,0 +1,63 @@
+study_area:
+  name: nanjing_quarterly_qc_edgar_hybrid
+grid:
+  path: ../../data/processed/features/nanjing/quarterly/grid_nodes.csv
+  node_id_column: node_id
+  lat_column: latitude
+  lon_column: longitude
+sources:
+  sentinel2:
+    path: ../../data/processed/features/nanjing/quarterly/sentinel2_features.csv
+    timestamp_column: timestamp
+    node_id_column: node_id
+    feature_columns:
+    - vegetation_area_ratio
+    - ndvi_mean
+    - forest_ratio
+    - farmland_ratio
+    - water_ratio
+    - built_ratio
+  era5:
+    path: ../../data/processed/features/nanjing/quarterly/era5_features.csv
+    timestamp_column: timestamp
+    node_id_column: node_id
+    feature_columns:
+    - land_surface_temperature
+    - u10_wind
+    - v10_wind
+    - precipitation
+  edgar:
+    path: ../../data/processed/features/nanjing/quarterly/edgar_features.csv
+    timestamp_column: timestamp
+    node_id_column: node_id
+    feature_columns:
+    - edgar_emission
+labels:
+  path: ../../data/processed/features/nanjing/quarterly/labels_qc_complete.csv
+  timestamp_column: timestamp
+  node_id_column: node_id
+  target_column: net_carbon_flux
+adjacency:
+  method: hybrid_wind_knn
+  radius_km: 15
+  k: 8
+  u_feature: u10_wind
+  v_feature: v10_wind
+  similarity_features:
+  - vegetation_area_ratio
+  - ndvi_mean
+  - forest_ratio
+  - farmland_ratio
+  - built_ratio
+  - edgar_emission
+  base_weight: 0.2
+  wind_scale: 0.65
+  similarity_weight: 0.35
+  distance_power: 1.0
+  symmetric: false
+options:
+  timestamps: intersection
+  missing_value_strategy: error
+output:
+  path: D:\4c\services\inference\outputs\adjacency_sweep\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep__nanjing_quarterly_qc_edgar_hybrid\combo_043\dataset\training_dataset.npz
+  metadata_path: D:\4c\services\inference\outputs\adjacency_sweep\stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep__nanjing_quarterly_qc_edgar_hybrid\combo_043\dataset\training_dataset.meta.json
