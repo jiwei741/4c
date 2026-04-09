@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as Cesium from 'cesium'
 import HeatMapLayer from './HeatMapLayer.vue'
 import { generateMockCarbonData } from '../mock/carbonData.js'
@@ -34,7 +34,7 @@ let toggleLayerListener = null
 let enterDrawingModeListener = null
 let exitDrawingModeListener = null
 
-const TIANDITU_TOKEN = 'f7c661500b1d6f3873b1538c67d81ad8'
+const GAODE_BASE_MAP_URL = 'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
 
 // 时间戳映射：将季度格式转换为后端API需要的日期格式
 function quarterToDate(quarterStr) {
@@ -300,20 +300,57 @@ function setupClickHandler() {
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
 }
 
+function addBaseImageryLayer() {
+  if (!viewer) return
 
-onMounted(() => {
-  viewer = new Cesium.Viewer(cesiumContainer.value, {
-    animation: false,
-    baseLayerPicker: false,
-    fullscreenButton: false,
-    geocoder: false,
-    homeButton: false,
-    infoBox: false,
-    sceneModePicker: false,
-    selectionIndicator: false,
-    timeline: false,
-    navigationHelpButton: false,
-  })
+  viewer.imageryLayers.removeAll()
+
+  try {
+    viewer.imageryLayers.addImageryProvider(
+      new Cesium.UrlTemplateImageryProvider({
+        url: GAODE_BASE_MAP_URL,
+        minimumLevel: 3,
+        maximumLevel: 18,
+      })
+    )
+    console.log('Using Amap base layer')
+  } catch (error) {
+    console.warn('Amap base layer unavailable, falling back to OpenStreetMap:', error)
+    viewer.imageryLayers.addImageryProvider(
+      new Cesium.OpenStreetMapImageryProvider({
+        url: 'https://tile.openstreetmap.org/'
+      })
+    )
+  }
+}
+
+
+onMounted(async () => {
+  await nextTick()
+
+  if (!cesiumContainer.value) {
+    console.error('Cesium container is not ready')
+    return
+  }
+
+  try {
+    viewer = new Cesium.Viewer(cesiumContainer.value, {
+      animation: false,
+      baseLayer: false,
+      baseLayerPicker: false,
+      fullscreenButton: false,
+      geocoder: false,
+      homeButton: false,
+      infoBox: false,
+      sceneModePicker: false,
+      selectionIndicator: false,
+      timeline: false,
+      navigationHelpButton: false,
+    })
+  } catch (error) {
+    console.error('Failed to create Cesium viewer:', error)
+    return
+  }
 
   // 监听重置视图事件
   resetViewListener = () => {
@@ -342,12 +379,8 @@ onMounted(() => {
   window.addEventListener('exit-drawing-mode', exitDrawingModeListener)
 
   // 添加底图 - 使用 OpenStreetMap（稳定可靠）
-  viewer.imageryLayers.removeAll()
-  viewer.imageryLayers.addImageryProvider(
-    new Cesium.OpenStreetMapImageryProvider({
-      url: 'https://tile.openstreetmap.org/'
-    })
-  )
+  addBaseImageryLayer()
+  viewer.scene.requestRender()
 
   viewerReady.value = viewer
 
