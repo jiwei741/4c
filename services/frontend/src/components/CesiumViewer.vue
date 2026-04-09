@@ -346,6 +346,7 @@ onMounted(async () => {
       selectionIndicator: false,
       timeline: false,
       navigationHelpButton: false,
+      orderIndependentTranslucency: false,
     })
   } catch (error) {
     console.error('Failed to create Cesium viewer:', error)

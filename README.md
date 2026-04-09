@@ -81,6 +81,52 @@ python scripts/test_platform_integration.py
 - 后端健康检查：<http://127.0.0.1:8000/api/v1/health>
 - 平台总览：<http://127.0.0.1:8000/api/v1/dashboard>
 
+## Docker 一键部署
+
+要求：
+- Docker Desktop
+- 建议至少 8GB 内存
+
+启动：
+```powershell
+cd d:\4c
+docker compose --env-file .env.docker up -d --build
+```
+
+访问：
+- 平台：<http://127.0.0.1:8080/>
+
+停止：
+```powershell
+cd d:\4c
+docker compose --env-file .env.docker down
+```
+
+最短部署说明见：
+- [DOCKER_DEPLOY.md](DOCKER_DEPLOY.md)
+
+## Docker 镜像发布版
+
+如果你们要把平台交付给使用方，并且不希望对方下载完整源码，可以使用镜像发布版。
+
+我们内部发布镜像：
+```powershell
+cd d:\4c
+powershell -ExecutionPolicy Bypass -File scripts\docker\build_release_images.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.0
+powershell -ExecutionPolicy Bypass -File scripts\docker\push_release_images.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.0
+```
+
+使用方部署：
+```powershell
+docker compose -f docker-compose.release.yml --env-file .env.release pull
+docker compose -f docker-compose.release.yml --env-file .env.release up -d
+```
+
+说明文档见：
+- [DOCKER_RELEASE.md](DOCKER_RELEASE.md)
+- [.env.release.example](.env.release.example)
+- [docker-compose.release.yml](docker-compose.release.yml)
+
 ## 文档入口
 
 - [详细方案](Spatio-Eco_详细方案.md)
