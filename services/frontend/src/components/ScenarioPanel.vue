@@ -1,126 +1,88 @@
-<template>
-  <div v-if="visible" class="scenario-panel">
-    <div class="panel-header">
-      <span class="panel-title">🔬 情景推演</span>
-      <button class="close-btn" @click="close">×</button>
+﻿<template>
+  <div v-if="visible" class="scenario-panel glass-card">
+    <div class="scenario-panel__header">
+      <div>
+        <strong>情景推演</strong>
+        <small>框选区域并模拟未来季度变化</small>
+      </div>
+      <button class="scenario-panel__close" @click="close">×</button>
     </div>
 
-    <div class="panel-content">
-      <!-- 当前状态 -->
+    <div class="scenario-panel__content">
       <div class="status-section">
-        <div class="status-label">当前状态</div>
-        <div class="status-value" :class="statusClass">
-          {{ statusText }}
+        <span class="status-label">当前状态</span>
+        <strong :class="statusClass">{{ statusText }}</strong>
+      </div>
+
+      <div v-if="step === 'draw'" class="instruction-card">
+        <span class="instruction-step">01</span>
+        <p>请在地图上拖拽框选待分析区域，系统将自动换算对应节点集合。</p>
+      </div>
+
+      <div v-if="selectedArea" class="area-card">
+        <div>
+          <span class="area-card__label">框选中心</span>
+          <strong>{{ selectedArea.center.lat.toFixed(3) }}°N / {{ selectedArea.center.lon.toFixed(3) }}°E</strong>
+        </div>
+        <div>
+          <span class="area-card__label">估算面积</span>
+          <strong>{{ selectedArea.areaKm2 }} km²</strong>
         </div>
       </div>
 
-      <!-- 操作步骤提示 -->
-      <div v-if="step === 'draw'" class="instruction">
-        <div class="step-number">1</div>
-        <div class="step-text">在地图上框选新增工业区范围</div>
-      </div>
-
-      <!-- 已选择的区域信息 -->
-      <div v-if="selectedArea" class="area-info">
-        <div class="info-label">已选区域</div>
-        <div class="info-value">
-          中心: {{ selectedArea.center.lat.toFixed(3) }}°N, {{ selectedArea.center.lon.toFixed(3) }}°E
-        </div>
-        <div class="info-value">
-          面积: ~{{ selectedArea.areaKm2 }} km²
-        </div>
-      </div>
-
-      <!-- 情景参数设置 -->
-      <div v-if="step === 'config'" class="params-section">
-        <div class="param-group">
-          <label class="param-label">排放强度倍数</label>
+      <div v-if="step === 'config'" class="param-section">
+        <div class="param-card">
+          <label>排放强度倍数</label>
           <div class="param-control">
-            <button @click="adjustEmission(-0.5)" class="param-btn">-</button>
-            <span class="param-value">{{ emissionMultiplier }}x</span>
-            <button @click="adjustEmission(0.5)" class="param-btn">+</button>
+            <button @click="adjustEmission(-0.5)">-</button>
+            <strong>{{ emissionMultiplier.toFixed(1) }}x</strong>
+            <button @click="adjustEmission(0.5)">+</button>
           </div>
-          <div class="param-hint">相对于当前排放的倍数</div>
+          <small>用于模拟工业扩张或排放压力加剧带来的区域扰动。</small>
         </div>
 
-        <div class="param-group">
-          <label class="param-label">预测年限</label>
-          <select v-model="predictionYears" class="param-select">
-            <option :value="1">1 年后</option>
-            <option :value="3">3 年后</option>
-            <option :value="5">5 年后</option>
+        <div class="param-card">
+          <label>时间配置</label>
+          <select v-model="predictionYears">
+            <option :value="1">短期演化（1 年）</option>
+            <option :value="3">中期演化（3 年）</option>
+            <option :value="5">长期演化（5 年）</option>
           </select>
+          <small>时间越长，图结构扩散和特征扰动的累计影响越明显。</small>
         </div>
       </div>
 
-      <!-- 操作按钮 -->
-      <div class="action-buttons">
-        <button
-          v-if="step === 'idle' || step === 'result'"
-          @click="startDrawing"
-          class="btn btn-primary"
-        >
-          🖊️ 绘制新增工业区
+      <div class="action-row">
+        <button v-if="step === 'idle' || step === 'result'" class="primary-btn" @click="startDrawing">开始框选</button>
+        <button v-if="step === 'draw'" class="primary-btn" :disabled="!selectedArea" @click="confirmArea">确认区域</button>
+        <button v-if="step === 'draw'" class="ghost-btn" @click="cancelDrawing">取消</button>
+        <button v-if="step === 'config'" class="primary-btn" :disabled="loading" @click="runScenario">
+          {{ loading ? '推演中...' : '运行推演' }}
         </button>
-
-        <button
-          v-if="step === 'draw'"
-          @click="confirmArea"
-          :disabled="!selectedArea"
-          class="btn btn-success"
-          :class="{ disabled: !selectedArea }"
-        >
-          ✓ 确认区域
-        </button>
-
-        <button
-          v-if="step === 'draw'"
-          @click="cancelDrawing"
-          class="btn btn-secondary"
-        >
-          ✕ 取消
-        </button>
-
-        <button
-          v-if="step === 'config'"
-          @click="runScenario"
-          :disabled="loading"
-          class="btn btn-primary"
-        >
-          {{ loading ? '⏳ 推演中...' : '🚀 开始推演' }}
-        </button>
-
-        <button
-          v-if="step === 'config'"
-          @click="redrawArea"
-          class="btn btn-secondary"
-        >
-          ← 重新绘制
-        </button>
-
-        <button
-          v-if="step === 'result'"
-          @click="reset"
-          class="btn btn-secondary"
-        >
-          🔄 新建情景
-        </button>
+        <button v-if="step === 'config'" class="ghost-btn" @click="redrawArea">重新框选</button>
+        <button v-if="step === 'result'" class="ghost-btn" @click="reset">新建情景</button>
       </div>
 
-      <!-- 推演结果摘要 -->
-      <div v-if="result" class="result-summary">
-        <div class="summary-title">推演结果</div>
-        <div class="summary-item">
-          <span class="summary-label">区域平均 GPP 变化</span>
-          <span class="summary-value" :class="result.gppChange >= 0 ? 'positive' : 'negative'">
-            {{ result.gppChange >= 0 ? '+' : '' }}{{ result.gppChange.toFixed(2) }} gC/m²/year
-          </span>
+      <div v-if="result" class="result-card">
+        <div class="result-card__head">
+          <strong>推演摘要</strong>
+          <small>{{ result.forecastHorizon || '最新预测窗' }}</small>
         </div>
-        <div class="summary-item">
-          <span class="summary-label">碳汇影响</span>
-          <span class="summary-value" :class="result.carbonImpact >= 0 ? 'positive' : 'negative'">
-            {{ result.carbonImpact >= 0 ? '提升' : '下降' }} {{ Math.abs(result.carbonImpact).toFixed(1) }}%
-          </span>
+        <div class="result-item">
+          <span>区域平均变化</span>
+          <strong :class="result.gppChange >= 0 ? 'positive' : 'negative'">
+            {{ result.gppChange >= 0 ? '+' : '' }}{{ result.gppChange.toFixed(4) }}
+          </strong>
+        </div>
+        <div class="result-item">
+          <span>碳汇影响比例</span>
+          <strong :class="result.carbonImpact >= 0 ? 'positive' : 'negative'">
+            {{ result.carbonImpact >= 0 ? '+' : '' }}{{ result.carbonImpact.toFixed(2) }}%
+          </strong>
+        </div>
+        <div class="result-item">
+          <span>受影响节点</span>
+          <strong>{{ result.backendSummary?.changed_nodes?.length || 0 }}</strong>
         </div>
       </div>
     </div>
@@ -128,44 +90,34 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { getScenarioNodeIds, runScenarioRequest } from '../api/scenario.js'
 
-// 组件状态
 const visible = ref(false)
-const step = ref('idle') // idle | draw | config | result
+const step = ref('idle')
 const loading = ref(false)
-
-// 情景参数
 const selectedArea = ref(null)
-const emissionMultiplier = ref(5.0) // 排放强度倍数
-const predictionYears = ref(3) // 预测年限
-
-// 推演结果
+const emissionMultiplier = ref(5.0)
+const predictionYears = ref(3)
 const result = ref(null)
 
-// 计算属性
 const statusText = computed(() => {
-  switch (step.value) {
-    case 'idle': return '等待操作'
-    case 'draw': return '正在绘制...'
-    case 'config': return '参数配置'
-    case 'result': return '推演完成'
-    default: return ''
+  const mapping = {
+    idle: '等待操作',
+    draw: '框选区域中',
+    config: '配置参数中',
+    result: '推演完成',
   }
+  return mapping[step.value] || '等待操作'
 })
 
-const statusClass = computed(() => {
-  switch (step.value) {
-    case 'idle': return 'status-idle'
-    case 'draw': return 'status-drawing'
-    case 'config': return 'status-config'
-    case 'result': return 'status-result'
-    default: return ''
-  }
-})
+const statusClass = computed(() => ({
+  'status-idle': step.value === 'idle',
+  'status-draw': step.value === 'draw',
+  'status-config': step.value === 'config',
+  'status-result': step.value === 'result',
+}))
 
-// 方法
 function open() {
   visible.value = true
   reset()
@@ -189,7 +141,6 @@ function startDrawing() {
   exitDrawingMode()
   step.value = 'draw'
   selectedArea.value = null
-  // 通知 CesiumViewer 进入绘制模式
   window.dispatchEvent(new CustomEvent('enter-drawing-mode'))
 }
 
@@ -203,10 +154,9 @@ function cancelDrawing() {
 }
 
 function confirmArea() {
-  if (selectedArea.value) {
-    step.value = 'config'
-    exitDrawingMode()
-  }
+  if (!selectedArea.value) return
+  step.value = 'config'
+  exitDrawingMode()
 }
 
 function exitDrawingMode() {
@@ -214,20 +164,22 @@ function exitDrawingMode() {
 }
 
 function adjustEmission(delta) {
-  const newValue = emissionMultiplier.value + delta
-  emissionMultiplier.value = Math.max(1, Math.min(20, newValue))
+  const next = emissionMultiplier.value + delta
+  emissionMultiplier.value = Math.max(1, Math.min(20, next))
 }
 
 async function runScenario() {
-  loading.value = true
+  if (!selectedArea.value) return
 
+  loading.value = true
   try {
     const nodeIds = await getScenarioNodeIds(selectedArea.value.bounds)
     if (nodeIds.length === 0) {
-      throw new Error('No grid nodes found in the selected area.')
+      throw new Error('Selected area does not contain mapped grid nodes.')
     }
 
     const scenarioPayload = {
+      model_key: 'stgnn_multistep_hybrid',
       preset: 'industrial_expansion',
       intensity: Number(emissionMultiplier.value),
       node_ids: nodeIds,
@@ -236,99 +188,29 @@ async function runScenario() {
         attenuation: 0.65,
         blend_mode: 'sum',
       },
-      temporal_profile: predictionYears.value > 1
-        ? {
-            mode: 'linear',
-            start_weight: 0.35,
-            end_weight: 1.0,
-          }
-        : {
-            mode: 'last',
-          },
+      temporal_profile:
+        predictionYears.value > 1
+          ? {
+              mode: 'linear',
+              start_weight: 0.35,
+              end_weight: 1.0,
+            }
+          : {
+              mode: 'last',
+            },
     }
 
     result.value = await runScenarioRequest(scenarioPayload, emissionMultiplier.value)
-
-    // 通知主组件显示对比视图
-    window.dispatchEvent(new CustomEvent('scenario-result', {
-      detail: result.value
-    }))
-
+    window.dispatchEvent(new CustomEvent('scenario-result', { detail: result.value }))
     step.value = 'result'
   } catch (error) {
-    console.error('情景推演失败:', error)
-    // 使用模拟结果（开发阶段）
-    const mockOriginalData = generateMockGridData(1.0)
-    const mockScenarioData = generateMockGridData(emissionMultiplier.value)
-
-    result.value = {
-      originalData: mockOriginalData,
-      scenarioData: mockScenarioData,
-      gppChange: -1.8,
-      carbonImpact: -15.2,
-      emissionMultiplier: emissionMultiplier.value
-    }
-
-    // 通知主组件显示对比视图
-    window.dispatchEvent(new CustomEvent('scenario-result', {
-      detail: result.value
-    }))
-
-    step.value = 'result'
+    console.error('Scenario run failed:', error)
+    step.value = 'config'
   } finally {
     loading.value = false
   }
 }
 
-// 生成模拟网格数据
-function generateMockGridData(multiplier) {
-  const grid = []
-  const latStart = 31.7
-  const lonStart = 118.6
-  const step = 0.02
-  const rows = 25
-  const cols = 25
-
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      const lat = latStart + i * step
-      const lon = lonStart + j * step
-
-      // 基础 GPP
-      let baseGPP = 3
-
-      // 紫金山森林区
-      if (i > 15 && j > 15 && i < 23 && j < 23) {
-        baseGPP = 7
-      }
-      // 主城区
-      else if (i >= 8 && i <= 18 && j >= 8 && j <= 18) {
-        baseGPP = 1
-      }
-      // 长江和玄武湖
-      else if (i < 8 || (i > 18 && j > 18)) {
-        baseGPP = 0.5
-      }
-      // 其他郊区
-      else {
-        baseGPP = 4
-      }
-
-      // 根据倍数调整（倍数越高，GPP越低）
-      const adjustedGPP = baseGPP / (1 + (multiplier - 1) * 0.15)
-
-      grid.push({
-        lat,
-        lon,
-        gpp: Math.round(adjustedGPP * 100) / 100
-      })
-    }
-  }
-
-  return { date: '2020-Q2', grid }
-}
-
-// 处理区域选择事件
 function handleAreaSelected(event) {
   selectedArea.value = event.detail
 }
@@ -347,306 +229,143 @@ defineExpose({ open, close })
 <style scoped>
 .scenario-panel {
   position: fixed;
-  left: 20px;
+  left: 280px;
   top: 50%;
   transform: translateY(-50%);
-  width: 320px;
-  background: rgba(20, 25, 30, 0.95);
-  backdrop-filter: blur(15px);
-  border-radius: 12px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  z-index: 1500;
-  color: white;
+  width: 350px;
+  padding: 20px;
+  z-index: 35;
 }
 
-.panel-header {
+.scenario-panel__header,
+.result-card__head,
+.status-section,
+.result-item,
+.param-control,
+.area-card,
+.action-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.panel-title {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 24px;
-  cursor: pointer;
-  padding: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.panel-content {
-  padding: 20px;
-}
-
-/* 状态显示 */
-.status-section {
-  margin-bottom: 20px;
-}
-
-.status-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 8px;
-}
-
-.status-value {
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-}
-
-.status-idle {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.status-drawing {
-  background: rgba(33, 150, 243, 0.2);
-  color: #64B5F6;
-}
-
-.status-config {
-  background: rgba(255, 193, 7, 0.2);
-  color: #FFC107;
-}
-
-.status-result {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4CAF50;
-}
-
-/* 操作提示 */
-.instruction {
-  display: flex;
-  align-items: center;
   gap: 12px;
-  padding: 15px;
-  background: rgba(33, 150, 243, 0.1);
-  border: 1px solid rgba(33, 150, 243, 0.3);
-  border-radius: 8px;
-  margin-bottom: 20px;
 }
 
-.step-number {
-  width: 28px;
-  height: 28px;
-  background: #2196F3;
-  border-radius: 50%;
-  display: flex;
+.scenario-panel__header {
+  align-items: flex-start;
+}
+
+.scenario-panel__header small,
+.status-label,
+.area-card__label,
+.param-card small,
+.result-card__head small {
+  color: var(--text-muted);
+}
+
+.scenario-panel__close {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.scenario-panel__content {
+  margin-top: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.status-section {
   align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
-  flex-shrink: 0;
 }
 
-.step-text {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
+.status-idle { color: var(--text-secondary); }
+.status-draw { color: var(--brand-amber); }
+.status-config { color: var(--brand-sea); }
+.status-result { color: var(--brand-eco); }
+
+.instruction-card,
+.area-card,
+.param-card,
+.result-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* 区域信息 */
-.area-info {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
+.instruction-card {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
 }
 
-.info-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 10px;
+.instruction-step {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brand-amber);
 }
 
-.info-value {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 5px;
+.area-card,
+.action-row,
+.result-item {
+  align-items: center;
 }
 
-/* 参数设置 */
-.params-section {
-  margin-bottom: 20px;
+.area-card {
+  flex-direction: column;
+  align-items: stretch;
 }
 
-.param-group {
-  margin-bottom: 20px;
-}
-
-.param-label {
+.area-card strong,
+.param-card label,
+.result-card strong {
   display: block;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 10px;
+}
+
+.param-section {
+  display: grid;
+  gap: 14px;
+}
+
+.param-card label {
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.param-card button,
+.param-card select {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  min-height: 40px;
+  padding: 0 14px;
 }
 
 .param-control {
-  display: flex;
   align-items: center;
-  gap: 15px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 10px 15px;
+  margin-bottom: 10px;
 }
 
-.param-btn {
-  width: 32px;
-  height: 32px;
-  background: rgba(76, 175, 80, 0.2);
-  border: 1px solid rgba(76, 175, 80, 0.5);
-  border-radius: 6px;
-  color: #4CAF50;
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
+.action-row {
+  flex-wrap: wrap;
 }
 
-.param-btn:hover {
-  background: rgba(76, 175, 80, 0.3);
+.result-card {
+  display: grid;
+  gap: 12px;
 }
 
-.param-value {
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: #4CAF50;
-}
-
-.param-hint {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  margin-top: 8px;
-}
-
-.param-select {
-  width: 100%;
-  padding: 12px 15px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.param-select:focus {
-  outline: none;
-  border-color: #4CAF50;
-}
-
-/* 操作按钮 */
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #45a049, #3d8b40);
-  transform: translateY(-1px);
-}
-
-.btn-success {
-  background: linear-gradient(135deg, #2196F3, #1976D2);
-  color: white;
-}
-
-.btn-success:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1976D2, #1565C0);
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 推演结果 */
-.result-summary {
-  margin-top: 20px;
-  padding: 15px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-}
-
-.summary-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.summary-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: 13px;
-}
-
-.summary-label {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.summary-value {
-  font-weight: 600;
-}
-
-.summary-value.positive {
-  color: #4CAF50;
-}
-
-.summary-value.negative {
-  color: #FF5252;
+@media (max-width: 900px) {
+  .scenario-panel {
+    left: 16px;
+    top: auto;
+    bottom: 16px;
+    transform: none;
+    width: calc(100vw - 32px);
+  }
 }
 </style>

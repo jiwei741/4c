@@ -1,108 +1,187 @@
-<template>
-  <div class="header">
-    <div class="header-content">
-      <div class="title-section">
-        <h1 class="project-name">天穹智算 <span class="english-name">Spatio-Eco</span></h1>
-        <p class="project-subtitle">区域碳汇时空溯源与演化流式计算平台</p>
+﻿<template>
+  <div class="workspace-header">
+    <div class="workspace-header__brand">
+      <div>
+        <p class="workspace-header__eyebrow">区域碳汇监测、预测与情景推演决策支持平台</p>
+        <h1>天穹智算 <span>Spatio-Eco</span></h1>
       </div>
-      <div class="info-section">
-        <span class="info-item">研究区域：南京市</span>
-        <span class="info-item" id="current-date-display">当前：{{ currentDate }}</span>
-        <button class="scenario-btn" @click="$emit('open-scenario')">
-          🔬 情景推演
-        </button>
+      <p class="workspace-header__lead">
+        以南京研究区为样本，组织多源季度数据、图时序预测与区域干预推演，形成可迁移的研究区工作台。
+      </p>
+    </div>
+
+    <div class="workspace-header__actions">
+      <RouterLink class="workspace-link" to="/">首页总览</RouterLink>
+      <RouterLink class="workspace-link" to="/cases">案例推演</RouterLink>
+      <RouterLink class="workspace-link" to="/evidence">模型证据</RouterLink>
+      <button class="workspace-scenario-btn" @click="$emit('open-scenario')">启动情景推演</button>
+    </div>
+
+    <div class="workspace-header__status">
+      <div class="status-pill">
+        <span class="label">研究区</span>
+        <span class="value">{{ studyArea }}</span>
+      </div>
+      <div class="status-pill">
+        <span class="label">当前季度</span>
+        <span class="value">{{ currentDate }}</span>
+      </div>
+      <div class="status-pill">
+        <span class="label">默认模型</span>
+        <span class="value">{{ defaultModel }}</span>
+      </div>
+      <div class="status-pill">
+        <span class="label">预测窗口</span>
+        <span class="value">{{ forecastWindow }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
+import { RouterLink } from 'vue-router'
+
+defineProps({
   currentDate: {
     type: String,
-    default: '2023-06-01'
-  }
+    default: '2025-Q1',
+  },
+  studyArea: {
+    type: String,
+    default: '南京研究区',
+  },
+  defaultModel: {
+    type: String,
+    default: 'ST-GNN Multi-Step',
+  },
+  forecastWindow: {
+    type: String,
+    default: '2025-Q1 至 2025-Q2',
+  },
 })
 
 defineEmits(['open-scenario'])
 </script>
 
 <style scoped>
-.header {
+.workspace-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(20,40,20,0.85) 100%);
-  backdrop-filter: blur(10px);
-  padding: 15px 30px;
-  z-index: 1000;
-  border-bottom: 1px solid rgba(76, 175, 80, 0.3);
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1.3fr auto;
+  gap: 18px;
+  padding: 22px 28px 18px;
+  background: linear-gradient(180deg, rgba(4, 14, 23, 0.96), rgba(4, 14, 23, 0.72));
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title-section {
+.workspace-header__brand {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 10px;
 }
 
-.project-name {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 2px;
+.workspace-header__eyebrow {
+  color: var(--brand-amber);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.english-name {
+.workspace-header h1 {
+  font-size: 30px;
+}
+
+.workspace-header h1 span {
+  color: var(--brand-sea);
   font-size: 18px;
-  font-weight: 400;
-  color: #4CAF50;
   margin-left: 10px;
 }
 
-.project-subtitle {
-  margin: 0;
-  font-size: 13px;
-  color: rgba(255,255,255,0.7);
+.workspace-header__lead {
+  max-width: 740px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
-.info-section {
+.workspace-header__actions {
   display: flex;
-  gap: 20px;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.workspace-link,
+.workspace-scenario-btn {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  display: inline-flex;
   align-items: center;
-}
-
-.info-item {
-  font-size: 14px;
-  color: rgba(255,255,255,0.8);
-  background: rgba(76, 175, 80, 0.15);
-  padding: 6px 15px;
-  border-radius: 20px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.scenario-btn {
-  font-size: 14px;
-  color: white;
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  padding: 8px 20px;
-  border-radius: 20px;
-  border: none;
+  justify-content: center;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s;
 }
 
-.scenario-btn:hover {
-  background: linear-gradient(135deg, #45a049, #3d8b40);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+.workspace-scenario-btn {
+  background: linear-gradient(135deg, var(--brand-eco), #84daa8);
+  color: #082216;
+  font-weight: 700;
+  border: none;
+}
+
+.workspace-header__status {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.status-pill {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.status-pill .label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.status-pill .value {
+  display: block;
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .workspace-header {
+    grid-template-columns: 1fr;
+    padding: 18px 18px 14px;
+  }
+
+  .workspace-header__actions {
+    justify-content: flex-start;
+  }
+
+  .workspace-header__status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .workspace-header__status {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

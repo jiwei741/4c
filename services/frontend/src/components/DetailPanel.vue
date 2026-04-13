@@ -1,202 +1,213 @@
-<template>
-    <div v-if="visible" class="detail-panel" :style="{ left: x + 'px', top: y + 'px' }">
-      <div class="panel-header">
-        <span class="panel-title">📍 碳汇详情</span>
-        <button class="close-btn" @click="close">×</button>
+﻿<template>
+  <div v-if="visible" class="detail-panel glass-card" :style="positionStyle">
+    <div class="detail-panel__header">
+      <div>
+        <strong>节点详情</strong>
+        <small>点击地图热区后显示</small>
       </div>
-      <div class="panel-content">
-        <div class="info-row">
-          <span class="label">经纬度</span>
-          <span class="value">{{ data.lat?.toFixed(4) }}°N, {{ data.lon?.toFixed(4) }}°E</span>
+      <button class="detail-panel__close" @click="close">×</button>
+    </div>
+
+    <div class="detail-panel__body">
+      <div class="detail-row">
+        <span>节点编号</span>
+        <strong>{{ data.nodeId || '未知' }}</strong>
+      </div>
+      <div class="detail-row">
+        <span>经纬度</span>
+        <strong>{{ formatCoord(data.lat) }}°N / {{ formatCoord(data.lon) }}°E</strong>
+      </div>
+      <div class="detail-row">
+        <span>预测值</span>
+        <strong :class="valueClass">{{ formatValue(data.gpp) }}</strong>
+      </div>
+      <div class="detail-row" v-if="data.riskLevel">
+        <span>风险分级</span>
+        <strong>{{ riskText }}</strong>
+      </div>
+      <div class="detail-row" v-if="data.comparisonGap !== undefined && data.comparisonGap !== null">
+        <span>相对基线变化</span>
+        <strong :class="data.comparisonGap >= 0 ? 'positive' : 'negative'">
+          {{ data.comparisonGap >= 0 ? '+' : '' }}{{ data.comparisonGap.toFixed(4) }}
+        </strong>
+      </div>
+
+      <div class="detail-meter">
+        <div class="detail-meter__track">
+          <div class="detail-meter__fill" :style="{ width: meterWidth }"></div>
         </div>
-        <div class="info-row">
-          <span class="label">GPP 值</span>
-          <span class="value" :class="getGppClass(data.gpp)">{{ data.gpp }} gC/m²/year</span>
-        </div>
-        <div class="info-row">
-          <span class="label">植被类型</span>
-          <span class="value">{{ getVegetationType(data.gpp) }}</span>
-        </div>
-        <div class="chart-container">
-          <div class="chart-title">NDVI 时序变化</div>
-          <div class="chart-placeholder">
-            <div class="chart-bars">
-              <div v-for="i in 12" :key="i" class="bar" :style="{ height: getBarHeight(i) }"></div>
-            </div>
-            <div class="chart-labels">
-              <span>1月</span>
-              <span>6月</span>
-              <span>12月</span>
-            </div>
-          </div>
+        <div class="detail-meter__labels">
+          <span>低</span>
+          <span>中</span>
+          <span>高</span>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue'
-  
-  const visible = ref(false)
-  const x = ref(100)
-  const y = ref(100)
-  const data = ref({})
-  
-  function show(pointData, screenX, screenY) {
-    data.value = pointData
-    x.value = screenX
-    y.value = screenY
-    visible.value = true
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+
+const visible = ref(false)
+const x = ref(100)
+const y = ref(100)
+const data = ref({})
+
+const positionStyle = computed(() => ({
+  left: `${Math.max(16, x.value)}px`,
+  top: `${Math.max(180, y.value)}px`,
+}))
+
+const valueClass = computed(() => {
+  if ((data.value.gpp || 0) >= 0.2) return 'positive'
+  if ((data.value.gpp || 0) <= 0.05) return 'negative'
+  return 'neutral'
+})
+
+const meterWidth = computed(() => {
+  const value = Number(data.value.riskScore ?? data.value.gpp ?? 0)
+  const normalized = Math.max(0, Math.min(1, value))
+  return `${Math.round(normalized * 100)}%`
+})
+
+const riskText = computed(() => {
+  const mapping = {
+    stable: '稳定区',
+    elevated: '重点关注区',
+    high: '高敏感区',
+    critical: '关键热点区',
   }
-  
-  function close() {
-    visible.value = false
-  }
-  
-  function getGppClass(gpp) {
-    if (gpp >= 6) return 'gpp-high'
-    if (gpp >= 3) return 'gpp-medium'
-    return 'gpp-low'
-  }
-  
-  function getVegetationType(gpp) {
-    if (gpp >= 6) return '🌲 森林（高碳汇）'
-    if (gpp >= 3) return '🌾 农田/草地（中等碳汇）'
-    if (gpp >= 1) return '🏢 城镇（低碳汇）'
-    return '💧 水体（极低碳汇）'
-  }
-  
-  function getBarHeight(month) {
-    // 模拟季节变化：夏季高，冬季低
-    const baseHeight = 30 + Math.sin((month - 3) * Math.PI / 6) * 50 + Math.random() * 20
-    return baseHeight + '%'
-  }
-  
-  onMounted(() => {
-    window.addEventListener('point-selected', handlePointSelected)
-  })
-  
-  onUnmounted(() => {
-    window.removeEventListener('point-selected', handlePointSelected)
-  })
-  
+  return mapping[data.value.riskLevel] || '未分级'
+})
+
+function formatCoord(value) {
+  return Number.isFinite(Number(value)) ? Number(value).toFixed(4) : '--'
+}
+
+function formatValue(value) {
+  return Number.isFinite(Number(value)) ? `${Number(value).toFixed(4)}` : '--'
+}
+
+function show(pointData, screenX, screenY) {
+  data.value = pointData || {}
+  x.value = screenX
+  y.value = screenY
+  visible.value = true
+}
+
+function close() {
+  visible.value = false
+}
+
 function handlePointSelected(event) {
   const detail = event.detail || {}
-  const { screenX = 300, screenY = 200, ...pointData } = detail
+  const { screenX = 320, screenY = 240, ...pointData } = detail
   show(pointData, screenX, screenY)
 }
-  
-  defineExpose({ show, close })
-  </script>
-  
-  <style scoped>
+
+onMounted(() => {
+  window.addEventListener('point-selected', handlePointSelected)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('point-selected', handlePointSelected)
+})
+
+defineExpose({ show, close })
+</script>
+
+<style scoped>
+.detail-panel {
+  position: fixed;
+  width: 320px;
+  padding: 18px;
+  z-index: 40;
+}
+
+.detail-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-panel__header small {
+  display: block;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.detail-panel__close {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.detail-panel__body {
+  margin-top: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.detail-row strong {
+  color: var(--text-primary);
+}
+
+.positive {
+  color: #8ee0a4;
+}
+
+.negative {
+  color: #ff9d7b;
+}
+
+.neutral {
+  color: var(--brand-amber);
+}
+
+.detail-meter {
+  display: grid;
+  gap: 8px;
+}
+
+.detail-meter__track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.detail-meter__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand-sea), var(--brand-amber), var(--brand-coral));
+}
+
+.detail-meter__labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
   .detail-panel {
-    position: fixed;
-    background: rgba(20, 25, 30, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 12px;
-    border: 1px solid rgba(76, 175, 80, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    min-width: 280px;
-    z-index: 2000;
-    color: white;
+    width: calc(100vw - 32px);
+    left: 16px !important;
+    top: auto !important;
+    bottom: 24px;
   }
-  
-  .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .panel-title {
-    font-weight: 600;
-    font-size: 15px;
-  }
-  
-  .close-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-  }
-  
-  .close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-  }
-  
-  .panel-content {
-    padding: 16px;
-  }
-  
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 13px;
-  }
-  
-  .label {
-    color: rgba(255, 255, 255, 0.6);
-  }
-  
-  .value {
-    font-weight: 500;
-  }
-  
-  .gpp-high { color: #4CAF50; }
-  .gpp-medium { color: #FFC107; }
-  .gpp-low { color: #FF5722; }
-  
-  .chart-container {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .chart-title {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 12px;
-  }
-  
-  .chart-placeholder {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 12px;
-  }
-  
-  .chart-bars {
-    display: flex;
-    gap: 4px;
-    align-items: flex-end;
-    height: 60px;
-  }
-  
-  .bar {
-    flex: 1;
-    background: linear-gradient(to top, #4CAF50, #81C784);
-    border-radius: 3px 3px 0 0;
-    min-height: 20%;
-    transition: height 0.3s;
-  }
-  
-  .chart-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.4);
-  }
-  </style>
-  
+}
+</style>

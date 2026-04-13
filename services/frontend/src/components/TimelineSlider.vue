@@ -1,63 +1,56 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: '2020-Q2'
-  }
+    default: '',
+  },
+  options: {
+    type: Array,
+    default: () => [],
+  },
+  label: {
+    type: String,
+    default: '预测季度',
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
 
-// 当前滑块位置（索引）
-const currentIndex = ref(0)
-
-// 定义可用的时间列表（2020-2024年，按季度）
-const availableDates = [
-  '2020-Q1', '2020-Q2', '2020-Q3', '2020-Q4',
-  '2021-Q1', '2021-Q2', '2021-Q3', '2021-Q4',
-  '2022-Q1', '2022-Q2', '2022-Q3', '2022-Q4',
-  '2023-Q1', '2023-Q2', '2023-Q3', '2023-Q4',
-  '2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4'
-]
-
-// 组件挂载时设置初始索引
-onMounted(() => {
-  const index = availableDates.findIndex(d => d === props.modelValue)
-  currentIndex.value = index >= 0 ? index : Math.floor(availableDates.length / 2)
-  if (index < 0) {
-    emit('update:modelValue', availableDates[currentIndex.value])
-  }
+const currentIndex = computed(() => {
+  const index = props.options.findIndex((item) => item === props.modelValue)
+  return index >= 0 ? index : 0
 })
 
-// 滑块拖动事件
 function onInput(event) {
-  const newIndex = parseInt(event.target.value)
-  currentIndex.value = newIndex
-  emit('update:modelValue', availableDates[newIndex])
+  const next = props.options[Number(event.target.value)]
+  if (next) {
+    emit('update:modelValue', next)
+  }
 }
 </script>
 
 <template>
-  <div class="timeline-container">
+  <div class="timeline-container glass-card">
     <div class="timeline-header">
-      <span class="date-label">时间:</span>
-      <span class="date-value">{{ modelValue }}</span>
+      <span class="timeline-label">{{ label }}</span>
+      <span class="timeline-value">{{ modelValue || '未选择' }}</span>
     </div>
 
     <input
+      class="timeline-slider"
       type="range"
       :min="0"
-      :max="availableDates.length - 1"
+      :max="Math.max(options.length - 1, 0)"
       :value="currentIndex"
+      :disabled="options.length <= 1"
       @input="onInput"
-      class="timeline-slider"
     />
 
-    <div class="timeline-labels">
-      <span>{{ availableDates[0] }}</span>
-      <span>{{ availableDates[availableDates.length - 1] }}</span>
+    <div class="timeline-meta">
+      <span>{{ options[0] || '起始季度' }}</span>
+      <span>{{ options[options.length - 1] || '结束季度' }}</span>
     </div>
   </div>
 </template>
@@ -65,64 +58,41 @@ function onInput(event) {
 <style scoped>
 .timeline-container {
   position: fixed;
-  bottom: 30px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  padding: 15px 25px;
-  border-radius: 10px;
-  color: white;
-  min-width: 350px;
+  width: min(560px, calc(100vw - 180px));
+  padding: 18px 24px;
+  z-index: 18;
 }
 
-.timeline-header {
+.timeline-header,
+.timeline-meta {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.date-label {
-  opacity: 0.7;
+.timeline-label,
+.timeline-meta {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
-.date-value {
-  font-weight: bold;
-  color: #4CAF50;
+.timeline-value {
+  color: var(--brand-eco);
+  font-weight: 700;
 }
 
 .timeline-slider {
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #444;
-  outline: none;
-  -webkit-appearance: none;
+  margin: 14px 0 12px;
+  accent-color: var(--brand-eco);
 }
 
-.timeline-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #4CAF50;
-  cursor: pointer;
-}
-
-.timeline-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #4CAF50;
-  cursor: pointer;
-  border: none;
-}
-
-.timeline-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 12px;
-  opacity: 0.6;
+@media (max-width: 900px) {
+  .timeline-container {
+    width: calc(100vw - 32px);
+  }
 }
 </style>

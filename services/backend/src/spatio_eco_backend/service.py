@@ -15,6 +15,7 @@ from .config import (
     ERA5_FEATURES_PATH,
     EXAMPLE_SCENARIOS,
     GRID_NODES_PATH,
+    INFERENCE_ROOT,
     LABELS_PATH,
     MEMBER_STATUS,
     MODEL_ARTIFACTS,
@@ -547,6 +548,79 @@ def run_scenario(request_payload: dict[str, Any]) -> dict[str, Any]:
         "result": result_payload,
         "summary": _scenario_summary(result_payload),
         "delta_layer": _attach_coordinates(delta_map),
+    }
+
+
+
+def get_evidence_summary() -> dict[str, Any]:
+    official_artifact = _model_lookup(DEFAULT_MULTI_STEP_MODEL)
+    official_metrics_payload = _load_json(official_artifact.metrics_path)
+    official_metrics = official_metrics_payload["test_metrics"]
+
+    multi_seed_path = (
+        INFERENCE_ROOT
+        / "outputs"
+        / "multi_seed"
+        / "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep"
+        / "multi_seed_summary.json"
+    )
+    combo_multi_seed_path = (
+        INFERENCE_ROOT
+        / "outputs"
+        / "multi_seed_combo064"
+        / "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep"
+        / "multi_seed_summary.json"
+    )
+    sweep_path = (
+        INFERENCE_ROOT
+        / "outputs"
+        / "adjacency_sweep"
+        / "stgnn_gcn_lstm_nanjing_quarterly_qc_edgar_hybrid_multistep__nanjing_quarterly_qc_edgar_hybrid"
+        / "sweep_summary.json"
+    )
+
+    multi_seed = _load_json(multi_seed_path)
+    combo_multi_seed = _load_json(combo_multi_seed_path)
+    sweep = _load_json(sweep_path)
+    best_combo = sweep["ranked_results"][0]
+
+    official_rmse = float(official_metrics["rmse"])
+    candidate_rmse = float(combo_multi_seed["aggregate"]["rmse_min"])
+    rmse_gain = official_rmse - candidate_rmse
+    rmse_gain_percent = (rmse_gain / official_rmse * 100.0) if official_rmse else 0.0
+
+    return {
+        "official_model": {
+            "key": official_artifact.key,
+            "name": official_artifact.name,
+            "stage": official_artifact.stage,
+            "metrics": official_metrics,
+            "best_val_loss": official_metrics_payload["best_val_loss"],
+        },
+        "model_comparison": list_models(),
+        "multi_seed": {
+            "num_runs": multi_seed["num_runs"],
+            "best_seed": multi_seed["best_run_by_rmse"]["seed"],
+            "best_run_rmse": multi_seed["best_run_by_rmse"]["test_metrics"]["rmse"],
+            "best_run_mae": multi_seed["best_run_by_rmse"]["test_metrics"]["mae"],
+            "aggregate": multi_seed["aggregate"],
+        },
+        "adjacency_sweep": {
+            "best_combo_id": best_combo["combo_id"],
+            "adjacency": best_combo["adjacency"],
+            "best_rmse": best_combo["result"]["test_metrics"]["rmse"],
+            "best_mae": best_combo["result"]["test_metrics"]["mae"],
+            "num_combinations": sweep["num_combinations"],
+        },
+        "candidate_upgrade": {
+            "combo_id": best_combo["combo_id"],
+            "best_seed": combo_multi_seed["best_run_by_rmse"]["seed"],
+            "rmse": candidate_rmse,
+            "mae": float(combo_multi_seed["aggregate"]["mae_min"]),
+            "rmse_gain": rmse_gain,
+            "rmse_gain_percent": rmse_gain_percent,
+            "summary": "Candidate combo_064 improves RMSE over the current official model, but it remains a candidate upgrade until formally promoted.",
+        },
     }
 
 

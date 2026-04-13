@@ -71,6 +71,10 @@ def create_app() -> Any:
     def models() -> dict[str, Any]:
         return {"items": service.list_models()}
 
+    @app.get("/api/v1/evidence/summary")
+    def evidence_summary() -> dict[str, Any]:
+        return service.get_evidence_summary()
+
     @app.get("/api/v1/models/{model_key}")
     def model_detail(model_key: str) -> dict[str, Any]:
         try:

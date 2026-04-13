@@ -1,304 +1,42 @@
-<script setup>
+﻿<script setup>
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as Cesium from 'cesium'
+
 import HeatMapLayer from './HeatMapLayer.vue'
+import { getPredictionLayer } from '../api/platform.js'
 import { generateMockCarbonData } from '../mock/carbonData.js'
-import { getBackendCarbonData } from '../api/backendDataLoader.js'
 
 const props = defineProps({
-  date: String,
-  scenarioResult: Object // 情景推演结果，用于显示对比视图
+  horizon: {
+    type: String,
+    default: '',
+  },
+  scenarioResult: {
+    type: Object,
+    default: null,
+  },
 })
 
-// 数据源配置
-// true = 使用后端API, false = 使用Mock数据
-const USE_BACKEND_API = false  // 等后端服务启动后再改为 true
-// 后端API使用日期格式 (2023-06-01)，前端时间轴使用季度格式 (2023-Q2)
-// 需要转换
-const USE_QUARTER_FORMAT = true
-
 const cesiumContainer = ref(null)
-let viewer = null
 const viewerReady = ref(null)
 const gridData = ref([])
-const layerVisible = ref(true)  // 控制热力图层显示/隐藏
+const layerVisible = ref(true)
 
-// 绘制相关状态
-let isDrawingMode = false
+let viewer = null
 let drawHandler = null
-let drawingEntity = null
-let startPosition = null
-let tempRectangle = null
+let clickHandler = null
 let resetViewListener = null
 let toggleLayerListener = null
 let enterDrawingModeListener = null
 let exitDrawingModeListener = null
-
-const GAODE_BASE_MAP_URL = 'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
-
-// 时间戳映射：将季度格式转换为后端API需要的日期格式
-function quarterToDate(quarterStr) {
-  // '2020-Q2' -> '2020-06-01'
-  const [year, quarter] = quarterStr.split('-')
-  const months = { Q1: '-01-01', Q2: '-04-01', Q3: '-07-01', Q4: '-10-01' }
-  return `${year}${months[quarter] || '-01-01'}`
-}
-
-// 反向转换：日期格式转季度格式
-function dateToQuarter(dateStr) {
-  // '2020-06-01' -> '2020-Q2'
-  const year = dateStr.substring(0, 4)
-  const month = parseInt(dateStr.substring(5, 7))
-  let quarter = 'Q1'
-  if (month >= 4 && month <= 6) quarter = 'Q2'
-  else if (month >= 7 && month <= 9) quarter = 'Q3'
-  else if (month >= 10) quarter = 'Q4'
-  return `${year}-${quarter}`
-}
-
-// 获取用于API调用的日期格式
-function getApiDate(dateStr) {
-  if (USE_QUARTER_FORMAT) {
-    // 前端使用季度格式，需要转换为日期格式给后端
-    return quarterToDate(dateStr)
-  }
-  // 已经是日期格式，直接使用
-  return dateStr
-}
-
-watch(() => props.date, async (newDate) => {
-  console.log('日期变化:', newDate)
-
-  if (USE_BACKEND_API) {
-    try {
-      const apiDate = getApiDate(newDate)
-      console.log('请求API日期:', apiDate)
-      const data = await getBackendCarbonData(apiDate)
-      console.log('收到数据:', data.grid.length, '个网格')
-      if (data.grid.length > 0) {
-        console.log('第一个网格点:', data.grid[0])
-      }
-      gridData.value = data.grid
-    } catch (error) {
-      console.error('从后端加载失败，使用Mock数据:', error)
-      const mockData = generateMockCarbonData(newDate)
-      gridData.value = mockData.grid
-    }
-  } else {
-    const mockData = generateMockCarbonData(newDate)
-    gridData.value = mockData.grid
-  }
-})
-
-// 进入绘制模式
-function enterDrawingMode() {
-  if (!viewer) return
-
-  setupDrawingHandler()
-  clearDrawingOverlay()
-  isDrawingMode = true
-  // 禁用相机控制，防止拖动时地图跟着动
-  viewer.scene.screenSpaceCameraController.enableInputs = false
-  viewer.canvas.style.cursor = 'crosshair'
-  showDrawingHint()
-}
-
-// 退出绘制模式
-function exitDrawingMode() {
-  if (!viewer) return
-
-  isDrawingMode = false
-  // 重新启用相机控制
-  viewer.scene.screenSpaceCameraController.enableInputs = true
-  viewer.canvas.style.cursor = 'default'
-  clearDrawingOverlay()
-  removeDrawingHint()
-}
-
-// 显示绘制提示
+let isDrawingMode = false
+let drawingEntity = null
 let hintEntity = null
-function showDrawingHint() {
-  hintEntity = viewer.entities.add({
-    position: Cesium.Cartesian3.fromDegrees(118.8, 32.0),
-    label: {
-      text: '🖊️ 拖动鼠标绘制新增工业区',
-      font: '16px sans-serif',
-      fillColor: Cesium.Color.WHITE,
-      outlineColor: Cesium.Color.BLACK,
-      outlineWidth: 2,
-      style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-      pixelOffset: new Cesium.Cartesian2(0, -50),
-      showBackground: true,
-      backgroundColor: new Cesium.Color(0.2, 0.2, 0.2, 0.8)
-    }
-  })
-}
+let startPosition = null
+let tempRectangle = null
 
-function removeDrawingHint() {
-  if (hintEntity) {
-    viewer.entities.remove(hintEntity)
-    hintEntity = null
-  }
-}
-
-// 清除绘制内容
-function clearDrawingOverlay() {
-  if (drawingEntity) {
-    viewer.entities.remove(drawingEntity)
-    drawingEntity = null
-  }
-  startPosition = null
-  tempRectangle = null
-}
-
-// 设置绘制事件监听
-function setupDrawingHandler() {
-  if (drawHandler || !viewer) {
-    return
-  }
-
-  drawHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
-
-  // 鼠标按下 - 开始绘制
-  drawHandler.setInputAction((movement) => {
-    if (!isDrawingMode) return
-
-    // 使用 pickEllipsoid 获取地球表面的位置（更可靠）
-    const cartesian = viewer.camera.pickEllipsoid(movement.position, viewer.scene.globe.ellipsoid)
-    if (!cartesian) return
-
-    const cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-    startPosition = {
-      lon: Cesium.Math.toDegrees(cartographic.longitude),
-      lat: Cesium.Math.toDegrees(cartographic.latitude)
-    }
-
-    console.log('开始绘制:', startPosition)
-  }, Cesium.ScreenSpaceEventType.LEFT_DOWN)
-
-  // 鼠标移动 - 更新矩形
-  drawHandler.setInputAction((movement) => {
-    if (!isDrawingMode || !startPosition) return
-
-    const cartesian = viewer.camera.pickEllipsoid(movement.endPosition, viewer.scene.globe.ellipsoid)
-    if (!cartesian) return
-
-    const cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-    const currentPosition = {
-      lon: Cesium.Math.toDegrees(cartographic.longitude),
-      lat: Cesium.Math.toDegrees(cartographic.latitude)
-    }
-
-    // 计算矩形边界
-    const west = Math.min(startPosition.lon, currentPosition.lon)
-    const east = Math.max(startPosition.lon, currentPosition.lon)
-    const south = Math.min(startPosition.lat, currentPosition.lat)
-    const north = Math.max(startPosition.lat, currentPosition.lat)
-
-    tempRectangle = { west, south, east, north }
-
-    // 更新或创建绘制实体
-    if (drawingEntity) {
-      drawingEntity.rectangle.coordinates = new Cesium.Rectangle(
-        Cesium.Math.toRadians(west),
-        Cesium.Math.toRadians(south),
-        Cesium.Math.toRadians(east),
-        Cesium.Math.toRadians(north)
-      )
-    } else {
-      drawingEntity = viewer.entities.add({
-        rectangle: {
-          coordinates: new Cesium.Rectangle(
-            Cesium.Math.toRadians(west),
-            Cesium.Math.toRadians(south),
-            Cesium.Math.toRadians(east),
-            Cesium.Math.toRadians(north)
-          ),
-          material: Cesium.Color.YELLOW.withAlpha(0.3),
-          outline: true,
-          outlineColor: Cesium.Color.YELLOW,
-          outlineWidth: 2,
-          height: 0,
-          classificationType: Cesium.ClassificationType.TERRAIN
-        }
-      })
-    }
-  }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
-
-  // 鼠标释放 - 完成绘制
-  drawHandler.setInputAction(() => {
-    if (!isDrawingMode || !startPosition || !tempRectangle) return
-
-    // 计算区域信息
-    const { west, south, east, north } = tempRectangle
-
-    // 计算中心点
-    const centerLon = (west + east) / 2
-    const centerLat = (south + north) / 2
-
-    // 估算面积（简化计算，使用纬度修正）
-    const latDiff = north - south
-    const lonDiff = east - west
-    const avgLat = (north + south) / 2
-    // 每度纬度约111km，每度经度约111km * cos(纬度)
-    const latKm = latDiff * 111
-    const lonKm = lonDiff * 111 * Math.cos(avgLat * Math.PI / 180)
-    const areaKm2 = Math.abs(latKm * lonKm)
-
-    console.log('完成绘制:', { center: { lat: centerLat, lon: centerLon }, areaKm2 })
-
-    // 触发区域选择事件
-    window.dispatchEvent(new CustomEvent('area-selected', {
-      detail: {
-        center: { lat: centerLat, lon: centerLon },
-        bounds: tempRectangle,
-        areaKm2: Math.round(areaKm2 * 10) / 10
-      }
-    }))
-
-    // 完成绘制，保留矩形让用户看到
-    startPosition = null
-  }, Cesium.ScreenSpaceEventType.LEFT_UP)
-}
-
-// 点击事件处理器 - 显示热力点详情
-let clickHandler = null
-function setupClickHandler() {
-  clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
-  clickHandler.setInputAction((movement) => {
-    if (isDrawingMode) return
-
-    const cartesian = viewer.camera.pickEllipsoid(movement.position, viewer.scene.globe.ellipsoid)
-    if (!cartesian) return
-
-    const cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-    const clickLon = Cesium.Math.toDegrees(cartographic.longitude)
-    const clickLat = Cesium.Math.toDegrees(cartographic.latitude)
-
-    // 找最近的热力点
-    let nearestPoint = null
-    let minDist = Infinity
-    for (const p of gridData.value) {
-      const dist = Math.sqrt(Math.pow(p.lon - clickLon, 2) + Math.pow(p.lat - clickLat, 2))
-      if (dist < 0.05 && dist < minDist) {
-        minDist = dist
-        nearestPoint = p
-      }
-    }
-
-    if (nearestPoint) {
-      window.dispatchEvent(new CustomEvent('point-selected', {
-        detail: {
-          lat: nearestPoint.lat,
-          lon: nearestPoint.lon,
-          gpp: nearestPoint.gpp,
-          screenX: movement.position.x,
-          screenY: movement.position.y,
-        }
-      }))
-    }
-  }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
-}
+const defaultHorizon = '2025-Q1'
+const gaodeBaseMapUrl = 'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
 
 function addBaseImageryLayer() {
   if (!viewer) return
@@ -308,67 +46,231 @@ function addBaseImageryLayer() {
   try {
     viewer.imageryLayers.addImageryProvider(
       new Cesium.UrlTemplateImageryProvider({
-        url: GAODE_BASE_MAP_URL,
+        url: gaodeBaseMapUrl,
         minimumLevel: 3,
         maximumLevel: 18,
-      })
+      }),
     )
-    console.log('Using Amap base layer')
   } catch (error) {
     console.warn('Amap base layer unavailable, falling back to OpenStreetMap:', error)
     viewer.imageryLayers.addImageryProvider(
-      new Cesium.OpenStreetMapImageryProvider({
-        url: 'https://tile.openstreetmap.org/'
-      })
+      new Cesium.OpenStreetMapImageryProvider({ url: 'https://tile.openstreetmap.org/' }),
     )
   }
 }
 
-
-onMounted(async () => {
-  await nextTick()
-
-  if (!cesiumContainer.value) {
-    console.error('Cesium container is not ready')
-    return
-  }
+async function loadPredictionLayer(horizon) {
+  const targetHorizon = horizon || props.horizon || defaultHorizon
 
   try {
-    viewer = new Cesium.Viewer(cesiumContainer.value, {
-      animation: false,
-      baseLayer: false,
-      baseLayerPicker: false,
-      fullscreenButton: false,
-      geocoder: false,
-      homeButton: false,
-      infoBox: false,
-      sceneModePicker: false,
-      selectionIndicator: false,
-      timeline: false,
-      navigationHelpButton: false,
-      orderIndependentTranslucency: false,
-    })
+    const payload = await getPredictionLayer({ horizon: targetHorizon })
+    const items = Array.isArray(payload.items) ? payload.items : []
+
+    if (items.length === 0) {
+      throw new Error('Prediction layer returned no items.')
+    }
+
+    gridData.value = items.map((item) => ({
+      nodeId: item.node_id,
+      lat: Number(item.latitude),
+      lon: Number(item.longitude),
+      gpp: Number(item.value),
+      riskLevel: item.risk_level || null,
+      riskScore: item.risk_score ?? null,
+      comparisonGap: item.comparison_gap ?? null,
+    }))
   } catch (error) {
-    console.error('Failed to create Cesium viewer:', error)
-    return
+    console.error('Failed to load real prediction layer, using mock data:', error)
+    gridData.value = generateMockCarbonData(targetHorizon).grid
+  }
+}
+
+function showDrawingHint() {
+  if (!viewer) return
+  removeDrawingHint()
+  hintEntity = viewer.entities.add({
+    position: Cesium.Cartesian3.fromDegrees(118.8, 32.02),
+    label: {
+      text: '拖拽鼠标框选需要进行情景干预的区域',
+      font: '15px sans-serif',
+      fillColor: Cesium.Color.WHITE,
+      outlineColor: Cesium.Color.BLACK,
+      outlineWidth: 2,
+      style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+      pixelOffset: new Cesium.Cartesian2(0, -52),
+      showBackground: true,
+      backgroundColor: new Cesium.Color(0.05, 0.1, 0.16, 0.9),
+    },
+  })
+}
+
+function removeDrawingHint() {
+  if (viewer && hintEntity) {
+    viewer.entities.remove(hintEntity)
+  }
+  hintEntity = null
+}
+
+function clearDrawingOverlay() {
+  if (viewer && drawingEntity) {
+    viewer.entities.remove(drawingEntity)
+  }
+  drawingEntity = null
+  startPosition = null
+  tempRectangle = null
+}
+
+function enterDrawingMode() {
+  if (!viewer) return
+  setupDrawingHandler()
+  clearDrawingOverlay()
+  isDrawingMode = true
+  viewer.scene.screenSpaceCameraController.enableInputs = false
+  viewer.canvas.style.cursor = 'crosshair'
+  showDrawingHint()
+}
+
+function exitDrawingMode() {
+  if (!viewer) return
+  isDrawingMode = false
+  viewer.scene.screenSpaceCameraController.enableInputs = true
+  viewer.canvas.style.cursor = 'default'
+  clearDrawingOverlay()
+  removeDrawingHint()
+}
+
+function setupDrawingHandler() {
+  if (!viewer || drawHandler) return
+
+  drawHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
+
+  drawHandler.setInputAction((movement) => {
+    if (!isDrawingMode) return
+
+    const cartesian = viewer.camera.pickEllipsoid(movement.position, viewer.scene.globe.ellipsoid)
+    if (!cartesian) return
+
+    const cartographic = Cesium.Cartographic.fromCartesian(cartesian)
+    startPosition = {
+      lon: Cesium.Math.toDegrees(cartographic.longitude),
+      lat: Cesium.Math.toDegrees(cartographic.latitude),
+    }
+  }, Cesium.ScreenSpaceEventType.LEFT_DOWN)
+
+  drawHandler.setInputAction((movement) => {
+    if (!isDrawingMode || !startPosition) return
+
+    const cartesian = viewer.camera.pickEllipsoid(movement.endPosition, viewer.scene.globe.ellipsoid)
+    if (!cartesian) return
+
+    const cartographic = Cesium.Cartographic.fromCartesian(cartesian)
+    const current = {
+      lon: Cesium.Math.toDegrees(cartographic.longitude),
+      lat: Cesium.Math.toDegrees(cartographic.latitude),
+    }
+
+    const west = Math.min(startPosition.lon, current.lon)
+    const east = Math.max(startPosition.lon, current.lon)
+    const south = Math.min(startPosition.lat, current.lat)
+    const north = Math.max(startPosition.lat, current.lat)
+
+    tempRectangle = { west, south, east, north }
+
+    if (drawingEntity) {
+      drawingEntity.rectangle.coordinates = new Cesium.Rectangle(
+        Cesium.Math.toRadians(west),
+        Cesium.Math.toRadians(south),
+        Cesium.Math.toRadians(east),
+        Cesium.Math.toRadians(north),
+      )
+      return
+    }
+
+    drawingEntity = viewer.entities.add({
+      rectangle: {
+        coordinates: new Cesium.Rectangle(
+          Cesium.Math.toRadians(west),
+          Cesium.Math.toRadians(south),
+          Cesium.Math.toRadians(east),
+          Cesium.Math.toRadians(north),
+        ),
+        material: Cesium.Color.fromCssColorString('rgba(228, 178, 91, 0.25)'),
+        outline: true,
+        outlineColor: Cesium.Color.fromCssColorString('#f0c16b'),
+        outlineWidth: 2,
+        classificationType: Cesium.ClassificationType.TERRAIN,
+      },
+    })
+  }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+
+  drawHandler.setInputAction(() => {
+    if (!isDrawingMode || !startPosition || !tempRectangle) return
+
+    const { west, south, east, north } = tempRectangle
+    const centerLon = (west + east) / 2
+    const centerLat = (south + north) / 2
+    const latDiff = north - south
+    const lonDiff = east - west
+    const avgLat = (north + south) / 2
+    const latKm = latDiff * 111
+    const lonKm = lonDiff * 111 * Math.cos((avgLat * Math.PI) / 180)
+    const areaKm2 = Math.abs(latKm * lonKm)
+
+    window.dispatchEvent(
+      new CustomEvent('area-selected', {
+        detail: {
+          center: { lat: centerLat, lon: centerLon },
+          bounds: tempRectangle,
+          areaKm2: Math.round(areaKm2 * 10) / 10,
+        },
+      }),
+    )
+
+    startPosition = null
+  }, Cesium.ScreenSpaceEventType.LEFT_UP)
+}
+
+function setupClickHandler() {
+  if (!viewer) return
+
+  if (clickHandler) {
+    clickHandler.destroy()
   }
 
-  // 监听重置视图事件
+  clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
+  clickHandler.setInputAction((movement) => {
+    if (isDrawingMode) return
+
+    const picked = viewer.scene.pick(movement.position)
+    if (!picked?.id?.properties?.pointData) return
+
+    const data = picked.id.properties.pointData.getValue()
+    window.dispatchEvent(
+      new CustomEvent('point-selected', {
+        detail: {
+          ...data,
+          screenX: movement.position.x,
+          screenY: movement.position.y,
+        },
+      }),
+    )
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
+}
+
+function bindWindowEvents() {
   resetViewListener = () => {
-    viewer.camera.flyTo({
+    viewer?.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 80000),
-      duration: 1.5
+      duration: 1.3,
     })
   }
   window.addEventListener('reset-view', resetViewListener)
 
-  // Layer toggle listener
   toggleLayerListener = () => {
     layerVisible.value = !layerVisible.value
   }
   window.addEventListener('toggle-layer', toggleLayerListener)
 
-  // Drawing mode listeners
   enterDrawingModeListener = () => {
     enterDrawingMode()
   }
@@ -378,87 +280,78 @@ onMounted(async () => {
     exitDrawingMode()
   }
   window.addEventListener('exit-drawing-mode', exitDrawingModeListener)
+}
 
-  // 添加底图 - 使用 OpenStreetMap（稳定可靠）
+watch(
+  () => props.horizon,
+  (nextHorizon) => {
+    loadPredictionLayer(nextHorizon)
+  },
+)
+
+onMounted(async () => {
+  await nextTick()
+
+  if (!cesiumContainer.value) {
+    return
+  }
+
+  viewer = new Cesium.Viewer(cesiumContainer.value, {
+    animation: false,
+    baseLayer: false,
+    baseLayerPicker: false,
+    fullscreenButton: false,
+    geocoder: false,
+    homeButton: false,
+    infoBox: false,
+    sceneModePicker: false,
+    selectionIndicator: false,
+    timeline: false,
+    navigationHelpButton: false,
+    orderIndependentTranslucency: false,
+    requestRenderMode: true,
+  })
+
   addBaseImageryLayer()
-  viewer.scene.requestRender()
+  setupDrawingHandler()
+  setupClickHandler()
+  bindWindowEvents()
 
   viewerReady.value = viewer
 
-  console.log('=== 初始化数据加载 ===')
-  console.log('USE_BACKEND_API:', USE_BACKEND_API)
-  console.log('props.date:', props.date)
-
-  // 加载初始数据
-  const initialDate = props.date || '2020-Q2'
-  const apiDate = getApiDate(initialDate)
-  console.log('初始日期:', initialDate, 'API日期:', apiDate)
-
-  if (USE_BACKEND_API) {
-    getBackendCarbonData(apiDate).then(data => {
-      console.log('初始数据加载成功:', data.grid.length, '个网格')
-      gridData.value = data.grid
-    }).catch(err => {
-      console.error('从后端加载失败，使用Mock数据:', err)
-      const mockData = generateMockCarbonData(initialDate)
-      gridData.value = mockData.grid
-    })
-  } else {
-    const mockData = generateMockCarbonData(initialDate)
-    gridData.value = mockData.grid
-  }
-
-  // 飞到南京
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 80000),
+    duration: 0,
   })
 
-  // 初始化绘制处理器（但不激活）
-  setupDrawingHandler()
-
-  // 初始化点击事件处理器
-  setupClickHandler()
+  await loadPredictionLayer(props.horizon)
+  viewer.scene.requestRender()
 })
 
 onUnmounted(() => {
-  if (resetViewListener) {
-    window.removeEventListener('reset-view', resetViewListener)
-  }
-  if (toggleLayerListener) {
-    window.removeEventListener('toggle-layer', toggleLayerListener)
-  }
-  if (enterDrawingModeListener) {
-    window.removeEventListener('enter-drawing-mode', enterDrawingModeListener)
-  }
-  if (exitDrawingModeListener) {
-    window.removeEventListener('exit-drawing-mode', exitDrawingModeListener)
-  }
+  if (resetViewListener) window.removeEventListener('reset-view', resetViewListener)
+  if (toggleLayerListener) window.removeEventListener('toggle-layer', toggleLayerListener)
+  if (enterDrawingModeListener) window.removeEventListener('enter-drawing-mode', enterDrawingModeListener)
+  if (exitDrawingModeListener) window.removeEventListener('exit-drawing-mode', exitDrawingModeListener)
 
-  // 清理点击事件处理器
-  if (clickHandler) {
-    clickHandler.destroy()
-    clickHandler = null
-  }
+  if (clickHandler) clickHandler.destroy()
+  if (drawHandler) drawHandler.destroy()
+  if (viewer) viewer.destroy()
 
-  if (drawHandler) {
-    drawHandler.destroy()
-    drawHandler = null
-  }
-
-  if (viewer) {
-    viewer.destroy()
-  }
+  clickHandler = null
+  drawHandler = null
+  viewer = null
 })
 </script>
 
 <template>
-  <div ref="cesiumContainer" class="cesium-container" />
+  <div ref="cesiumContainer" class="cesium-container"></div>
   <HeatMapLayer :viewer="viewerReady" :gridData="gridData" :visible="layerVisible" />
 </template>
 
 <style scoped>
 .cesium-container {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 }
 </style>

@@ -1,97 +1,78 @@
-<template>
-    <div class="legend-panel">
-      <div class="legend-header">🌍 碳汇强度</div>
-      <div class="legend-items">
-        <div class="legend-item">
-          <div class="legend-color high"></div>
-          <span class="legend-label">8+ 高碳汇</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color medium-high"></div>
-          <span class="legend-label">5-8 中高碳汇</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color medium"></div>
-          <span class="legend-label">2-5 中等碳汇</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color low"></div>
-          <span class="legend-label">0-2 低碳汇</span>
+﻿<template>
+  <div class="legend-panel glass-card">
+    <div class="legend-header">
+      <span>碳汇强度分级</span>
+      <small>单位：净碳通量预测值</small>
+    </div>
+    <div class="legend-items">
+      <div v-for="item in items" :key="item.label" class="legend-item">
+        <span class="legend-color" :style="{ background: item.color }"></span>
+        <div>
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.hint }}</small>
         </div>
       </div>
-      <div class="legend-unit">单位: gC/m²/year</div>
     </div>
-  </template>
-  
-  <style scoped>
+  </div>
+</template>
+
+<script setup>
+const items = [
+  { label: '高潜力', hint: '区域碳汇能力相对较强', color: 'linear-gradient(135deg, #76db9b, #1c7d56)' },
+  { label: '重点关注', hint: '处于中高水平但存在波动', color: 'linear-gradient(135deg, #a8d672, #d2a739)' },
+  { label: '承压区', hint: '受建成区或排放扰动影响明显', color: 'linear-gradient(135deg, #e2a554, #ba6d39)' },
+  { label: '脆弱区', hint: '需优先评估生态修复或减排策略', color: 'linear-gradient(135deg, #f19473, #b74739)' },
+]
+</script>
+
+<style scoped>
+.legend-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 126px;
+  width: 260px;
+  padding: 18px;
+  z-index: 16;
+}
+
+.legend-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.legend-header small,
+.legend-item small {
+  color: var(--text-muted);
+}
+
+.legend-items {
+  display: grid;
+  gap: 12px;
+}
+
+.legend-item {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.legend-color {
+  width: 20px;
+  height: 54px;
+  border-radius: 999px;
+}
+
+.legend-item strong {
+  display: block;
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) {
   .legend-panel {
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    background: rgba(20, 25, 30, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 10px;
-    border: 1px solid rgba(76, 175, 80, 0.3);
-    padding: 15px;
-    min-width: 150px;
-    z-index: 1000;
-    color: white;
+    display: none;
   }
-  
-  .legend-header {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    text-align: center;
-    opacity: 0.9;
-  }
-  
-  .legend-items {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .legend-color {
-    width: 24px;
-    height: 16px;
-    border-radius: 3px;
-  }
-  
-  .high {
-    background: linear-gradient(90deg, #4CAF50, #81C784);
-  }
-  
-  .medium-high {
-    background: linear-gradient(90deg, #CDDC39, #FFEB3B);
-  }
-  
-  .medium {
-    background: linear-gradient(90deg, #FF9800, #FFC107);
-  }
-  
-  .low {
-    background: linear-gradient(90deg, #F44336, #FF5722);
-  }
-  
-  .legend-label {
-    font-size: 12px;
-    opacity: 0.8;
-  }
-  
-  .legend-unit {
-    margin-top: 10px;
-    font-size: 10px;
-    text-align: center;
-    opacity: 0.5;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 8px;
-  }
-  </style>
-  
+}
+</style>

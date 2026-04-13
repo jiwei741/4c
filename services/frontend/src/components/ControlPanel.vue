@@ -1,82 +1,78 @@
-<template>
-    <div class="control-panel">
-      <button class="control-btn" @click="resetView" title="重置视图">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-        </svg>
-      </button>
-      <button class="control-btn" @click="toggleFullscreen" title="全屏">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-        </svg>
-      </button>
-      <button class="control-btn" @click="toggleLayer" title="切换图层">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-          <polyline points="2 17 12 22 22 17"/>
-          <polyline points="2 12 12 17 22 12"/>
-        </svg>
-      </button>
-    </div>
-  </template>
-  
-  <script setup>
-  const props = defineProps({
-    viewer: Object
-  })
-  
-  const emit = defineEmits(['reset-view', 'toggle-layer'])
-  
-  function resetView() {
-    emit('reset-view')
+﻿<template>
+  <div class="control-panel glass-card">
+    <button class="control-btn" @click="emit('reset-view')">
+      <span>重置视图</span>
+      <small>返回研究区全域</small>
+    </button>
+    <button class="control-btn" @click="toggleFullscreen">
+      <span>全屏演示</span>
+      <small>适合答辩投屏</small>
+    </button>
+    <button class="control-btn" @click="emit('toggle-layer')">
+      <span>切换图层</span>
+      <small>显示或隐藏预测强度层</small>
+    </button>
+  </div>
+</template>
+
+<script setup>
+const emit = defineEmits(['reset-view', 'toggle-layer'])
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen()
+    return
   }
-  
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-    } else {
-      document.exitFullscreen()
-    }
-  }
-  
-  function toggleLayer() {
-    emit('toggle-layer')
-  }
-  </script>
-  
-  <style scoped>
+
+  document.exitFullscreen()
+}
+</script>
+
+<style scoped>
+.control-panel {
+  position: fixed;
+  left: 20px;
+  bottom: 124px;
+  width: 240px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  z-index: 16;
+}
+
+.control-btn {
+  text-align: left;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.control-btn span,
+.control-btn small {
+  display: block;
+}
+
+.control-btn small {
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+@media (max-width: 1100px) {
   .control-panel {
     position: fixed;
-    top: 100px;
-    left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 1000;
+    left: 16px;
+    bottom: 110px;
+    width: calc(100vw - 32px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  
-  .control-btn {
-    width: 40px;
-    height: 40px;
-    background: rgba(20, 25, 30, 0.9);
-    border: 1px solid rgba(76, 175, 80, 0.3);
-    border-radius: 8px;
-    color: #4CAF50;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
+}
+
+@media (max-width: 780px) {
+  .control-panel {
+    grid-template-columns: 1fr;
   }
-  
-  .control-btn:hover {
-    background: rgba(76, 175, 80, 0.2);
-    transform: scale(1.05);
-  }
-  
-  .control-btn:active {
-    transform: scale(0.95);
-  }
-  </style>
-  
+}
+</style>

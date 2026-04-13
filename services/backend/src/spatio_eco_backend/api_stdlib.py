@@ -63,6 +63,8 @@ class ApiHandler(BaseHTTPRequestHandler):
                 payload = {"items": service.get_dashboard()["members"]}
             elif path == "/api/v1/models":
                 payload = {"items": service.list_models()}
+            elif path == "/api/v1/evidence/summary":
+                payload = service.get_evidence_summary()
             elif path.startswith("/api/v1/models/"):
                 model_key = path.split("/")[-1]
                 payload = service.get_model(model_key)
