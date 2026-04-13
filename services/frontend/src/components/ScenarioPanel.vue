@@ -173,7 +173,10 @@ async function runScenario() {
 
   loading.value = true
   try {
+    console.log('[ScenarioPanel] Getting node IDs for bounds:', selectedArea.value.bounds)
     const nodeIds = await getScenarioNodeIds(selectedArea.value.bounds)
+    console.log('[ScenarioPanel] Got node IDs:', nodeIds)
+
     if (nodeIds.length === 0) {
       throw new Error('Selected area does not contain mapped grid nodes.')
     }
@@ -199,12 +202,15 @@ async function runScenario() {
               mode: 'last',
             },
     }
+    console.log('[ScenarioPanel] Scenario payload:', scenarioPayload)
 
     result.value = await runScenarioRequest(scenarioPayload, emissionMultiplier.value)
+    console.log('[ScenarioPanel] Scenario result:', result.value)
+
     window.dispatchEvent(new CustomEvent('scenario-result', { detail: result.value }))
     step.value = 'result'
   } catch (error) {
-    console.error('Scenario run failed:', error)
+    console.error('[ScenarioPanel] Scenario run failed:', error)
     step.value = 'config'
   } finally {
     loading.value = false
@@ -212,10 +218,12 @@ async function runScenario() {
 }
 
 function handleAreaSelected(event) {
+  console.log('[ScenarioPanel] area-selected event received:', event.detail)
   selectedArea.value = event.detail
 }
 
 onMounted(() => {
+  console.log('[ScenarioPanel] Mounted, adding area-selected event listener')
   window.addEventListener('area-selected', handleAreaSelected)
 })
 

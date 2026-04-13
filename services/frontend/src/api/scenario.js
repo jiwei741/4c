@@ -90,36 +90,61 @@ function buildScenarioResult(payload, nodeMap, emissionMultiplier) {
 }
 
 export async function getScenarioNodeIds(bounds) {
+  console.log('[scenario.js] Getting node IDs for bounds:', bounds)
   const nodeMap = await getGridNodeMap()
+  console.log('[scenario.js] Total nodes in map:', nodeMap.size)
+
   const selectedNodeIds = []
 
   for (const [nodeId, node] of nodeMap.entries()) {
-    const latitude = toNumber(node.latitude)
-    const longitude = toNumber(node.longitude)
-    const withinLatitude = latitude >= toNumber(bounds.south) && latitude <= toNumber(bounds.north)
-    const withinLongitude = longitude >= toNumber(bounds.west) && longitude <= toNumber(bounds.east)
+    // 使用节点的边界范围来匹配，而不是中心点
+    const nodeMinLon = toNumber(node.min_lon)
+    const nodeMaxLon = toNumber(node.max_lon)
+    const nodeMinLat = toNumber(node.min_lat)
+    const nodeMaxLat = toNumber(node.max_lat)
 
-    if (withinLatitude && withinLongitude) {
+    const boundsWest = toNumber(bounds.west)
+    const boundsEast = toNumber(bounds.east)
+    const boundsSouth = toNumber(bounds.south)
+    const boundsNorth = toNumber(bounds.north)
+
+    // 检查节点边界是否与框选区域有重叠
+    const overlapLon = !(nodeMaxLon < boundsWest || nodeMinLon > boundsEast)
+    const overlapLat = !(nodeMaxLat < boundsSouth || nodeMinLat > boundsNorth)
+
+    if (overlapLon && overlapLat) {
       selectedNodeIds.push(nodeId)
     }
   }
 
+  console.log('[scenario.js] Selected node IDs:', selectedNodeIds)
   return selectedNodeIds
 }
 
 export async function runScenarioRequest(payload, emissionMultiplier) {
+  console.log('[scenario.js] Sending scenario request to:', buildApiUrl('/api/v1/scenarios/run'))
+  console.log('[scenario.js] Request payload:', payload)
+
   const response = await fetch(buildApiUrl('/api/v1/scenarios/run'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
 
+  console.log('[scenario.js] Response status:', response.status)
+
   if (!response.ok) {
     const message = await response.text()
+    console.error('[scenario.js] Request failed:', message)
     throw new Error(message || `Scenario request failed: ${response.status}`)
   }
 
   const data = await response.json()
+  console.log('[scenario.js] Response data keys:', Object.keys(data))
+  console.log('[scenario.js] Response data sample:', data)
+
   const nodeMap = await getGridNodeMap()
-  return buildScenarioResult(data, nodeMap, emissionMultiplier)
+  const result = buildScenarioResult(data, nodeMap, emissionMultiplier)
+  console.log('[scenario.js] Built result:', result)
+  return result
 }
