@@ -121,6 +121,7 @@ function clearDrawingOverlay() {
 }
 
 function enterDrawingMode() {
+  console.log('[CesiumViewer] enterDrawingMode called, viewer:', !!viewer)
   if (!viewer) return
   setupDrawingHandler()
   clearDrawingOverlay()
@@ -128,6 +129,7 @@ function enterDrawingMode() {
   viewer.scene.screenSpaceCameraController.enableInputs = false
   viewer.canvas.style.cursor = 'crosshair'
   showDrawingHint()
+  console.log('[CesiumViewer] Drawing mode activated, isDrawingMode:', isDrawingMode)
 }
 
 function exitDrawingMode() {
@@ -140,7 +142,13 @@ function exitDrawingMode() {
 }
 
 function setupDrawingHandler() {
-  if (!viewer || drawHandler) return
+  if (!viewer) return
+
+  // 清理旧的处理器
+  if (drawHandler) {
+    drawHandler.destroy()
+    drawHandler = null
+  }
 
   drawHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
 
@@ -204,6 +212,7 @@ function setupDrawingHandler() {
   }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
 
   drawHandler.setInputAction(() => {
+    console.log('[CesiumViewer] LEFT_UP, isDrawingMode:', isDrawingMode, 'startPosition:', !!startPosition, 'tempRectangle:', !!tempRectangle)
     if (!isDrawingMode || !startPosition || !tempRectangle) return
 
     const { west, south, east, north } = tempRectangle
@@ -216,13 +225,16 @@ function setupDrawingHandler() {
     const lonKm = lonDiff * 111 * Math.cos((avgLat * Math.PI) / 180)
     const areaKm2 = Math.abs(latKm * lonKm)
 
+    const eventData = {
+      center: { lat: centerLat, lon: centerLon },
+      bounds: tempRectangle,
+      areaKm2: Math.round(areaKm2 * 10) / 10,
+    }
+    console.log('[CesiumViewer] Dispatching area-selected event:', eventData)
+
     window.dispatchEvent(
       new CustomEvent('area-selected', {
-        detail: {
-          center: { lat: centerLat, lon: centerLon },
-          bounds: tempRectangle,
-          areaKm2: Math.round(areaKm2 * 10) / 10,
-        },
+        detail: eventData,
       }),
     )
 
@@ -235,6 +247,7 @@ function setupClickHandler() {
 
   if (clickHandler) {
     clickHandler.destroy()
+    clickHandler = null
   }
 
   clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
