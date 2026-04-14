@@ -65,6 +65,9 @@ class ApiHandler(BaseHTTPRequestHandler):
                 payload = {"items": service.list_models()}
             elif path == "/api/v1/evidence/summary":
                 payload = service.get_evidence_summary()
+            elif path == "/api/v1/assistant/faq":
+                self._send_json({"error": "method_not_allowed", "path": path}, status=405)
+                return
             elif path.startswith("/api/v1/models/"):
                 model_key = path.split("/")[-1]
                 payload = service.get_model(model_key)
@@ -99,6 +102,11 @@ class ApiHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/v1/scenarios/run":
             payload = service.run_scenario(self._read_json_body())
             self._send_json(payload, status=202)
+            return
+
+        if parsed.path == "/api/v1/assistant/faq":
+            payload = service.get_faq_assistant_reply(self._read_json_body())
+            self._send_json(payload)
             return
 
         if parsed.path != "/api/v1/scenarios/run":

@@ -1,42 +1,34 @@
 ﻿<template>
-  <div class="page-shell home-page">
+  <div class="page-shell page-shell--interactive home-page">
+    <InteractiveBackdrop variant="home" />
     <SiteNavigation />
 
-    <main>
+    <main class="page-content-layer">
       <section class="hero page-section">
-        <div class="hero__copy">
-          <span class="brand-chip">2026 竞赛展示版 · 南京季度研究区</span>
-          <h1 class="section-title">在地图上直接干预区域，并看到未来季度碳汇变化。</h1>
-          <p class="hero__lead">
-            天穹智算围绕区域碳汇监测、图时序预测与情景推演构建可运行平台，将多源季度特征、正式模型产物与交互式工作台组织成面向答辩和推广的完整展示链路。
-          </p>
-          <div class="hero__actions">
-            <RouterLink class="primary-btn" to="/workspace">进入研究区工作台</RouterLink>
-            <RouterLink class="secondary-btn" to="/cases">查看案例推演</RouterLink>
-            <RouterLink class="ghost-btn" to="/evidence">查看模型证据</RouterLink>
-          </div>
-          <div class="tag-list">
-            <span class="data-tag">309 个规则网格节点</span>
-            <span class="data-tag">2020-Q1 至 2024-Q4 季度数据装配</span>
-            <span class="data-tag">ST-GNN / LSTM 正式模型产物</span>
-            <span class="data-tag">Docker 一键交付</span>
+        <div class="hero__copy hero__copy--assistant glass-card">
+          <FaqAssistantCard />
+          <div class="hero__scroll">
+            <span class="hero__scroll-line"></span>
+            <span>向下滚动，查看平台能力与使用入口</span>
           </div>
         </div>
 
-        <div class="hero__panel glass-card">
-          <div class="hero__panel-head">
-            <strong>平台首屏预览</strong>
-            <small>真实地图与热力层截图</small>
-          </div>
-          <img src="/images/workspace-preview.png" alt="平台工作台预览" class="hero__preview" />
-          <div class="hero__panel-foot">
-            <div>
-              <span>默认模型</span>
-              <strong>{{ dashboard?.prediction_preview?.model_name || '加载中' }}</strong>
+        <div class="hero__stage">
+          <div class="hero__preview-card glass-card">
+            <div class="hero__panel-head">
+              <strong>平台能力图谱</strong>
+              <small>围绕历史分布、预测季度与情景推演组织同一套研究区分析入口</small>
             </div>
-            <div>
-              <span>当前预测窗</span>
-              <strong>{{ forecastWindow }}</strong>
+            <KnowledgeConstellation />
+            <div class="hero__panel-foot">
+              <div>
+                <span>当前模型</span>
+                <strong>{{ dashboard?.prediction_preview?.model_name || '加载中' }}</strong>
+              </div>
+              <div>
+                <span>预测范围</span>
+                <strong>{{ forecastWindow }}</strong>
+              </div>
             </div>
           </div>
         </div>
@@ -44,32 +36,32 @@
 
       <section class="page-section section-block">
         <div class="section-headline">
-          <span class="brand-chip">问题场景</span>
-          <h2 class="section-title">为什么需要区域碳汇时空分析，而不只是静态统计表？</h2>
+          <span class="brand-chip">平台价值</span>
+          <h2 class="section-title">把历史回看、季度预测和区域推演放在同一条分析链路中。</h2>
           <p class="section-lead">
-            南京样本区的地表覆盖、排放扰动和季节变化并不是同步发生的。单一年度统计无法解释空间差异，也难以直接支持“如果在某片区域发生工业扩张或生态修复，会带来什么影响”这一核心问题。
+            研究区内的碳汇变化并不是均匀发生的。平台通过季度尺度和规则网格视角，把空间差异、时间变化和区域干预影响放到同一张地图中展示，帮助用户更快识别重点区域与变化节点。
           </p>
         </div>
         <div class="problem-grid">
           <article class="glass-card problem-card">
-            <strong>传统统计过粗</strong>
-            <p>行政区平均值难以识别局部热点区，无法支撑网格级追踪与对比。</p>
+            <strong>查看历史变化</strong>
+            <p>支持切换历史季度，观察研究区内不同时段的空间分布变化。</p>
           </article>
           <article class="glass-card problem-card">
-            <strong>过程变化难解释</strong>
-            <p>地表覆盖变化与季度尺度扰动需要统一到同一空间单元，才能形成连续判断。</p>
+            <strong>关注未来趋势</strong>
+            <p>在同一套工作台中查看当前接入的预测季度结果，理解后续变化方向。</p>
           </article>
           <article class="glass-card problem-card">
-            <strong>决策需要推演</strong>
-            <p>仅有预测还不够，平台需要能对不同区域策略的影响进行可视化对比。</p>
+            <strong>比较干预影响</strong>
+            <p>框选区域后运行情景推演，直接比较推演前后地图差异与受影响节点。</p>
           </article>
         </div>
       </section>
 
       <section class="page-section section-block">
         <div class="section-headline">
-          <span class="brand-chip">核心能力</span>
-          <h2 class="section-title">从多源季度数据到工作台展示，形成完整闭环。</h2>
+          <span class="brand-chip">核心功能</span>
+          <h2 class="section-title">面向使用者的主要入口都集中在工作台中。</h2>
         </div>
         <div class="capability-grid">
           <article v-for="item in capabilities" :key="item.title" class="glass-card capability-card">
@@ -80,14 +72,16 @@
         </div>
       </section>
 
-      <section class="page-section section-block">
-        <div class="section-headline">
-          <span class="brand-chip">证据预览</span>
-          <h2 class="section-title">展示不止是页面，更要给出真实模型与实验结果。</h2>
-          <p class="section-lead">本页仅展示摘要，完整结果请进入模型证据页查看正式模型、多 seed 与 adjacency sweep 结果。</p>
+      <section class="page-section section-block overview-band glass-card">
+        <div class="overview-band__copy">
+          <span class="brand-chip">结果概览</span>
+          <h2 class="section-title">当前平台已经接入历史季度、预测季度和情景推演入口。</h2>
+          <p class="section-lead">
+            可以直接从首页进入工作台查看研究区地图、切换季度结果，或进入模型结果页了解当前结果的整体误差与稳定性表现。
+          </p>
         </div>
         <div class="metric-grid">
-          <div class="metric-card" v-for="card in evidenceCards" :key="card.label">
+          <div class="metric-card" v-for="card in overviewCards" :key="card.label">
             <span class="label">{{ card.label }}</span>
             <span class="value">{{ card.value }}</span>
             <span class="hint">{{ card.hint }}</span>
@@ -95,34 +89,38 @@
         </div>
       </section>
 
-      <section class="page-section section-block case-highlight">
-        <div class="case-highlight__copy">
-          <span class="brand-chip">案例演示</span>
-          <h2 class="section-title">围绕真实推演样例组织页面，而不是页面巡检。</h2>
+      <section class="page-section section-block quick-entry">
+        <div class="quick-entry__copy">
+          <span class="brand-chip">开始使用</span>
+          <h2 class="section-title">如果你想直接查看地图、切换季度或运行情景推演，可以从这里进入。</h2>
           <p class="section-lead">
-            当前平台已固化工业扩张扰动的示例情景，能够展示基线预测、情景扰动和区域变化排行，适合作为答辩中的完整故事线。
+            工作台提供季度切换、热力图查看、节点详情、区域框选和情景推演对比；模型结果页则用于查看当前结果表现与使用建议。
           </p>
           <div class="hero__actions">
-            <RouterLink class="primary-btn" to="/cases">进入案例页</RouterLink>
-            <RouterLink class="ghost-btn" to="/workspace">从工作台重新演示</RouterLink>
+            <RouterLink class="secondary-btn quick-entry__primary" to="/workspace">打开工作台</RouterLink>
+            <RouterLink class="ghost-btn quick-entry__secondary" to="/evidence">打开模型结果页</RouterLink>
           </div>
         </div>
-        <div class="case-highlight__stats glass-card">
+        <div class="quick-entry__stats glass-card">
           <div>
-            <span>当前正式模型</span>
-            <strong>{{ officialModelName }}</strong>
+            <span>研究区</span>
+            <strong>{{ studyAreaName }}</strong>
           </div>
           <div>
-            <span>预测窗口</span>
-            <strong>{{ forecastWindow }}</strong>
+            <span>历史季度</span>
+            <strong>{{ historicalRange }}</strong>
           </div>
           <div>
-            <span>研究区范围</span>
-            <strong>南京研究区 / 309 节点</strong>
+            <span>预测季度</span>
+            <strong>{{ forecastRange }}</strong>
           </div>
         </div>
       </section>
     </main>
+
+    <RouterLink class="guide-fab" to="/guide" aria-label="打开平台使用引导">
+      <span class="guide-fab__mark">?</span>
+    </RouterLink>
   </div>
 </template>
 
@@ -130,6 +128,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import FaqAssistantCard from '../components/FaqAssistantCard.vue'
+import InteractiveBackdrop from '../components/InteractiveBackdrop.vue'
+import KnowledgeConstellation from '../components/KnowledgeConstellation.vue'
 import SiteNavigation from '../components/SiteNavigation.vue'
 import { getDashboard, getEvidenceSummary } from '../api/platform.js'
 
@@ -137,50 +138,54 @@ const dashboard = ref(null)
 const evidence = ref(null)
 
 const capabilities = [
-  { index: '01', title: '多源季度数据装配', desc: '将遥感、气象与排放代理统一到规则网格与季度尺度，形成稳定训练底座。' },
-  { index: '02', title: '高精度特征重建', desc: '以高精度季度 Sentinel-2 特征为正式训练源，保证地图与模型口径一致。' },
-  { index: '03', title: '图时序碳汇预测', desc: '当前默认正式模型为多步 ST-GNN，用于未来季度碳汇趋势判断。' },
-  { index: '04', title: '区域情景推演', desc: '支持地图框选区域后直接施加扰动，并查看未来季度变化。' },
-  { index: '05', title: '案例与证据展示', desc: '将正式模型指标、多 seed 与参数扫描结果收束成可答辩的证据链。' },
-  { index: '06', title: '标准化交付部署', desc: '已支持 Docker 镜像发布和精简交付目录，便于后续域名上线。' },
+  { index: '01', title: '季度地图回看', desc: '按季度切换历史与预测结果，在地图上直接查看研究区空间分布。' },
+  { index: '02', title: '热点区域识别', desc: '结合颜色层和节点详情，更快识别当前季度的重点区域。' },
+  { index: '03', title: '趋势结果查看', desc: '在工作台中浏览当前已接入的预测季度结果，观察区域变化方向。' },
+  { index: '04', title: '情景推演对比', desc: '对指定区域施加干预后，比较推演前后的地图结果与变化节点。' },
+  { index: '05', title: '模型结果概览', desc: '在模型结果页查看平台当前结果表现、稳定性和使用建议。' },
 ]
 
+const studyAreaName = computed(() => dashboard.value?.project?.study_area?.name || '南京研究区')
 const forecastWindow = computed(() => {
   const preview = dashboard.value?.prediction_preview?.prediction_window
   if (!preview?.from && !preview?.to) return '2025-Q1 至 2025-Q2'
   return `${preview.from || '起点'} 至 ${preview.to || '终点'}`
 })
 
-const officialModelName = computed(() => evidence.value?.official_model?.name || dashboard.value?.prediction_preview?.model_name || 'ST-GNN Multi-Step')
-const evidenceCards = computed(() => {
-  const official = evidence.value?.official_model
-  const multiSeed = evidence.value?.multi_seed
-  const sweep = evidence.value?.adjacency_sweep
-  const combo = evidence.value?.candidate_upgrade
-
-  return [
-    {
-      label: '正式模型 RMSE',
-      value: official ? Number(official.metrics.rmse).toFixed(4) : '--',
-      hint: official ? `${official.name} 当前正式结果` : '读取中',
-    },
-    {
-      label: '多 Seed 最优',
-      value: multiSeed ? Number(multiSeed.best_run_rmse).toFixed(4) : '--',
-      hint: multiSeed ? `最佳 seed：${multiSeed.best_seed}` : '读取中',
-    },
-    {
-      label: 'Sweep 最优组合',
-      value: sweep ? sweep.best_combo_id : '--',
-      hint: sweep ? `RMSE ${Number(sweep.best_rmse).toFixed(4)}` : '读取中',
-    },
-    {
-      label: '候选升级效果',
-      value: combo ? `${combo.rmse_gain_percent.toFixed(2)}%` : '--',
-      hint: combo ? '相对正式模型 RMSE 改善' : '读取中',
-    },
-  ]
+const historicalRange = computed(() => {
+  const items = dashboard.value?.prediction_preview?.historical_timestamps || []
+  if (!items.length) return '--'
+  return `${items[0]} 至 ${items[items.length - 1]}`
 })
+
+const forecastRange = computed(() => {
+  const items = dashboard.value?.prediction_preview?.forecast_timestamps || []
+  if (!items.length) return '--'
+  return `${items[0]} 至 ${items[items.length - 1]}`
+})
+
+const overviewCards = computed(() => [
+  {
+    label: '研究区范围',
+    value: studyAreaName.value,
+    hint: '当前平台样本区域',
+  },
+  {
+    label: '历史季度',
+    value: historicalRange.value,
+    hint: '支持回看历史分布',
+  },
+  {
+    label: '预测季度',
+    value: forecastRange.value,
+    hint: '支持查看当前预测结果',
+  },
+  {
+    label: '当前模型',
+    value: evidence.value?.current_result?.name || dashboard.value?.prediction_preview?.model_name || '加载中',
+    hint: '用于地图展示与推演分析',
+  },
+])
 
 onMounted(async () => {
   try {
@@ -195,40 +200,85 @@ onMounted(async () => {
 
 <style scoped>
 .hero,
-.case-highlight {
+.quick-entry {
   display: grid;
   gap: 28px;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(360px, 0.78fr) minmax(620px, 1.22fr);
   align-items: center;
 }
 
 .hero {
-  padding: 52px 0 38px;
+  padding: 34px 0 36px;
+  min-height: calc(100vh - 120px);
 }
 
 .hero__copy,
-.hero__panel,
-.case-highlight__stats {
-  padding: 30px;
+.hero__preview-card,
+.quick-entry__stats,
+.overview-band {
+  padding: 28px;
 }
 
-.hero__lead {
-  margin-top: 18px;
-  font-size: 18px;
-  color: var(--text-secondary);
-  max-width: 760px;
+.hero__copy {
+  display: grid;
+  gap: 20px;
+  align-self: stretch;
+  padding: 34px;
+}
+
+.hero__copy--assistant {
+  align-content: center;
+}
+
+.hero :deep(.faq-assistant) {
+  margin-top: 4px;
 }
 
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin: 24px 0 18px;
+}
+
+.hero__scroll {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.hero__scroll-line {
+  width: 46px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--brand-sea), transparent);
+}
+
+.hero__stage {
+  position: relative;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero__preview-card {
+  width: min(100%, 820px);
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.hero__panel-foot {
+  align-items: center;
 }
 
 .hero__panel-head,
 .hero__panel-foot,
-.case-highlight__stats {
+.quick-entry__stats {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -236,20 +286,20 @@ onMounted(async () => {
 
 .hero__panel-head small,
 .hero__panel-foot span,
-.case-highlight__stats span {
+.quick-entry__stats span,
+.hero__floating span,
+.hero__floating small {
   color: var(--text-muted);
 }
 
-.hero__preview {
-  margin: 18px 0;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 .hero__panel-foot > div,
-.case-highlight__stats > div {
+.quick-entry__stats > div {
   display: grid;
   gap: 8px;
+}
+
+.hero__panel-foot strong {
+  font-size: 18px;
 }
 
 .section-block {
@@ -268,10 +318,7 @@ onMounted(async () => {
   gap: 18px;
 }
 
-.problem-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
+.problem-grid,
 .capability-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -295,20 +342,96 @@ onMounted(async () => {
   font-weight: 700;
 }
 
-.case-highlight {
+.overview-band {
+  display: grid;
+  gap: 22px;
+}
+
+.quick-entry {
   padding-bottom: 72px;
 }
 
-.case-highlight__stats {
+.quick-entry__stats {
   display: grid;
 }
 
-@media (max-width: 980px) {
+.quick-entry__primary {
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.quick-entry__secondary {
+  min-height: 44px;
+  padding: 0 18px;
+}
+
+.guide-fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 22;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(145deg, rgba(31, 143, 188, 0.96), rgba(79, 191, 127, 0.94));
+  color: #04131d;
+  box-shadow:
+    0 24px 44px rgba(6, 19, 31, 0.34),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.guide-fab::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 34%);
+  opacity: 0.8;
+}
+
+.guide-fab:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 30px 52px rgba(6, 19, 31, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.guide-fab__mark {
+  position: relative;
+  z-index: 1;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (max-width: 1120px) {
   .hero,
-  .case-highlight,
+  .quick-entry,
   .problem-grid,
   .capability-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+
+  .hero__stage {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 760px) {
+  .guide-fab {
+    right: 18px;
+    bottom: 18px;
+    width: 56px;
+    height: 56px;
   }
 }
 </style>

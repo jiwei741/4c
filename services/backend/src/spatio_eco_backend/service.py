@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import csv
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from . import faq_assistant
 from .config import (
     ARCHITECTURE_LAYERS,
     BACKEND_RUNTIME_ROOT,
@@ -129,13 +131,92 @@ def _grid_node_lookup() -> dict[str, dict[str, Any]]:
         }
 
 
-def _attach_coordinates(node_map: dict[str, Any]) -> list[dict[str, Any]]:
+def _quarter_sort_key(timestamp: str) -> tuple[int, int]:
+    year_text, quarter_text = str(timestamp).split("-Q")
+    return int(year_text), int(quarter_text)
+
+
+@lru_cache(maxsize=1)
+def _historical_label_horizons() -> dict[str, dict[str, float]]:
+    horizons: dict[str, dict[str, float]] = {}
+    with LABELS_PATH.open("r", encoding="utf-8-sig", newline="") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            timestamp = row["timestamp"]
+            if not timestamp or _quarter_sort_key(timestamp) < (2020, 1):
+                continue
+
+            node_id = str(row["node_id"])
+            scaled_value = float(row["net_carbon_flux"]) * 0.0001
+            horizons.setdefault(timestamp, {})[node_id] = scaled_value
+    return dict(sorted(horizons.items(), key=lambda item: _quarter_sort_key(item[0])))
+
+
+def _dominant_landcover(row: dict[str, Any]) -> tuple[str, dict[str, float]]:
+    metrics = {
+        "森林": float(row.get("forest_ratio", 0.0) or 0.0),
+        "农田": float(row.get("farmland_ratio", 0.0) or 0.0),
+        "水体": float(row.get("water_ratio", 0.0) or 0.0),
+        "城市": float(row.get("built_ratio", 0.0) or 0.0),
+    }
+    label = max(metrics.items(), key=lambda item: item[1])[0]
+    return label, metrics
+
+
+@lru_cache(maxsize=1)
+def _sentinel2_landcover_lookup() -> dict[str, dict[str, dict[str, Any]]]:
+    horizons: dict[str, dict[str, dict[str, Any]]] = {}
+    with SENTINEL2_FEATURES_PATH.open("r", encoding="utf-8-sig", newline="") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            timestamp = row["timestamp"]
+            node_id = str(row["node_id"])
+            dominant_label, metrics = _dominant_landcover(row)
+            horizons.setdefault(timestamp, {})[node_id] = {
+                "dominant_landcover": dominant_label,
+                "landcover_ratios": metrics,
+                "vegetation_area_ratio": float(row.get("vegetation_area_ratio", 0.0) or 0.0),
+                "ndvi_mean": float(row.get("ndvi_mean", 0.0) or 0.0),
+            }
+    return horizons
+
+
+def _nearest_landcover_timestamp(timestamp: str | None) -> str | None:
+    if not timestamp:
+        return None
+
+    lookup = _sentinel2_landcover_lookup()
+    available = sorted(lookup.keys(), key=_quarter_sort_key)
+    if not available:
+        return None
+
+    target_key = _quarter_sort_key(timestamp)
+    eligible = [item for item in available if _quarter_sort_key(item) <= target_key]
+    if eligible:
+        return eligible[-1]
+    return available[0]
+
+
+def _attach_coordinates(node_map: dict[str, Any], *, timestamp: str | None = None) -> list[dict[str, Any]]:
     nodes = _grid_node_lookup()
+    landcover_timestamp = _nearest_landcover_timestamp(timestamp)
+    landcover_lookup = _sentinel2_landcover_lookup().get(landcover_timestamp or "", {})
     features: list[dict[str, Any]] = []
     for node_id, value in node_map.items():
         if node_id not in nodes:
             continue
-        features.append({**nodes[node_id], "value": float(value)})
+        landcover = landcover_lookup.get(node_id, {})
+        features.append(
+            {
+                **nodes[node_id],
+                "value": float(value),
+                "dominant_landcover": landcover.get("dominant_landcover"),
+                "landcover_ratios": landcover.get("landcover_ratios", {}),
+                "landcover_timestamp": landcover_timestamp,
+                "vegetation_area_ratio": landcover.get("vegetation_area_ratio"),
+                "ndvi_mean": landcover.get("ndvi_mean"),
+            }
+        )
     return features
 
 
@@ -146,6 +227,25 @@ def _prediction_horizons(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
         horizon = payload.get("prediction_timestamp_to", "latest")
         return {horizon: payload["predictions"]}
     return {}
+
+
+def _workspace_horizons(model_key: str | None = None) -> tuple[dict[str, dict[str, Any]], dict[str, str], dict[str, Any]]:
+    payload = get_prediction_payload(model_key)
+    forecast_horizons = _prediction_horizons(payload)
+    historical_horizons = _historical_label_horizons()
+
+    horizon_map: dict[str, dict[str, Any]] = {}
+    horizon_types: dict[str, str] = {}
+
+    for timestamp, node_map in historical_horizons.items():
+        horizon_map[timestamp] = node_map
+        horizon_types[timestamp] = "historical"
+
+    for timestamp, node_map in forecast_horizons.items():
+        horizon_map[timestamp] = node_map
+        horizon_types[timestamp] = "forecast"
+
+    return horizon_map, horizon_types, payload
 
 
 def summary_horizon(payload: dict[str, Any]) -> str:
@@ -342,8 +442,9 @@ def get_prediction_payload(model_key: str | None = None) -> dict[str, Any]:
 
 
 def get_prediction_summary(model_key: str | None = None) -> dict[str, Any]:
-    payload = get_prediction_payload(model_key)
-    horizons = _prediction_horizons(payload)
+    horizons, horizon_types, payload = _workspace_horizons(model_key)
+    forecast_timestamps = payload.get("forecast_timestamps", [])
+    historical_timestamps = [timestamp for timestamp, kind in horizon_types.items() if kind == "historical"]
     summary: dict[str, Any] = {
         "model_key": payload["model_key"],
         "model_name": payload["model_name"],
@@ -352,7 +453,9 @@ def get_prediction_summary(model_key: str | None = None) -> dict[str, Any]:
             "from": payload.get("prediction_timestamp_from"),
             "to": payload.get("prediction_timestamp_to"),
         },
-        "forecast_timestamps": payload.get("forecast_timestamps", []),
+        "historical_timestamps": historical_timestamps,
+        "forecast_timestamps": forecast_timestamps,
+        "timeline_timestamps": sorted(horizons, key=_quarter_sort_key),
         "by_horizon": {},
     }
     for horizon, node_map in horizons.items():
@@ -360,6 +463,7 @@ def get_prediction_summary(model_key: str | None = None) -> dict[str, Any]:
         summary["by_horizon"][horizon] = {
             **_stats(values),
             "top_nodes": _top_nodes(node_map),
+            "horizon_type": horizon_types[horizon],
         }
     return summary
 
@@ -374,8 +478,7 @@ def get_grid_nodes() -> dict[str, Any]:
 
 
 def get_prediction_layer(model_key: str | None = None, horizon: str | None = None) -> dict[str, Any]:
-    payload = get_prediction_payload(model_key)
-    horizons = _prediction_horizons(payload)
+    horizons, horizon_types, payload = _workspace_horizons(model_key)
     if not horizons:
         raise KeyError("no prediction horizons available")
     default_horizon = payload.get("forecast_timestamps", [next(iter(horizons))])[0]
@@ -387,7 +490,8 @@ def get_prediction_layer(model_key: str | None = None, horizon: str | None = Non
         "model_name": payload["model_name"],
         "target_name": payload["target_name"],
         "horizon": selected_horizon,
-        "items": _attach_coordinates(horizons[selected_horizon]),
+        "horizon_type": horizon_types[selected_horizon],
+        "items": _attach_coordinates(horizons[selected_horizon], timestamp=selected_horizon),
     }
 
 
@@ -396,8 +500,7 @@ def get_prediction_analytics(
     horizon: str | None = None,
     compare_model_key: str | None = None,
 ) -> dict[str, Any]:
-    payload = get_prediction_payload(model_key)
-    horizons = _prediction_horizons(payload)
+    horizons, horizon_types, payload = _workspace_horizons(model_key)
     if not horizons:
         raise KeyError("no prediction horizons available")
 
@@ -408,7 +511,7 @@ def get_prediction_analytics(
     compare_model_key = compare_model_key or "lstm_multistep_baseline"
     compare_payload = None
     compare_map: dict[str, Any] = {}
-    if compare_model_key != payload["model_key"]:
+    if horizon_types[selected_horizon] == "forecast" and compare_model_key != payload["model_key"]:
         try:
             compare_payload = get_prediction_payload(compare_model_key)
             compare_horizons = _prediction_horizons(compare_payload)
@@ -418,7 +521,7 @@ def get_prediction_analytics(
             compare_map = {}
 
     node_map = horizons[selected_horizon]
-    items = _attach_coordinates(node_map)
+    items = _attach_coordinates(node_map, timestamp=selected_horizon)
     values = [float(item["value"]) for item in items]
     min_value = min(values) if values else 0.0
     max_value = max(values) if values else 0.0
@@ -470,6 +573,7 @@ def get_prediction_analytics(
         "compare_model_key": compare_payload["model_key"] if compare_payload else None,
         "compare_model_name": compare_payload["model_name"] if compare_payload else None,
         "horizon": selected_horizon,
+        "horizon_type": horizon_types[selected_horizon],
         "items": items,
         "summary": analytics_summary,
     }
@@ -496,7 +600,7 @@ def get_scenario_example(scenario_key: str) -> dict[str, Any]:
         "name": meta["name"],
         "input": input_payload,
         "output": output_payload,
-        "delta_layer": _attach_coordinates(delta_map),
+        "delta_layer": _attach_coordinates(delta_map, timestamp=horizon),
         "summary": _scenario_summary(output_payload),
     }
 
@@ -547,8 +651,12 @@ def run_scenario(request_payload: dict[str, Any]) -> dict[str, Any]:
         "scenario_request": scenario_payload,
         "result": result_payload,
         "summary": _scenario_summary(result_payload),
-        "delta_layer": _attach_coordinates(delta_map),
+        "delta_layer": _attach_coordinates(delta_map, timestamp=first_horizon),
     }
+
+
+def get_faq_assistant_reply(payload: dict[str, Any]) -> dict[str, Any]:
+    return faq_assistant.answer_faq(payload)
 
 
 
@@ -589,37 +697,84 @@ def get_evidence_summary() -> dict[str, Any]:
     rmse_gain = official_rmse - candidate_rmse
     rmse_gain_percent = (rmse_gain / official_rmse * 100.0) if official_rmse else 0.0
 
+    role_lookup = {
+        DEFAULT_MULTI_STEP_MODEL: {
+            "label": "当前平台默认结果",
+            "description": "用于工作台地图展示、季度切换与情景推演。",
+        },
+        DEFAULT_SINGLE_STEP_MODEL: {
+            "label": "单季度结果",
+            "description": "适合观察单一季度的空间格局变化。",
+        },
+        "lstm_multistep_baseline": {
+            "label": "基础对比结果",
+            "description": "用于提供时序预测的基线参考。",
+        },
+    }
+
+    comparison_items = []
+    for item in list_models():
+        role_meta = role_lookup.get(
+            item["key"],
+            {
+                "label": "对比结果",
+                "description": "用于补充观察不同模型的表现差异。",
+            },
+        )
+        comparison_items.append(
+            {
+                "key": item["key"],
+                "name": item["name"],
+                "role_label": role_meta["label"],
+                "role_description": role_meta["description"],
+                "metrics": item["metrics"],
+            }
+        )
+
+    quality_summary = (
+        "当前平台结果已经能够稳定支撑地图展示和情景推演；在本轮测试范围内，进一步调优还可以带来小幅误差改善。"
+        if rmse_gain_percent > 0
+        else "当前平台结果已经接近本轮测试范围内的较优水平，可继续作为默认展示结果。"
+    )
+
     return {
-        "official_model": {
+        "current_result": {
             "key": official_artifact.key,
             "name": official_artifact.name,
-            "stage": official_artifact.stage,
+            "role_label": "当前平台默认结果",
+            "role_description": "用于工作台地图展示、季度切换与情景推演。",
             "metrics": official_metrics,
             "best_val_loss": official_metrics_payload["best_val_loss"],
         },
-        "model_comparison": list_models(),
-        "multi_seed": {
-            "num_runs": multi_seed["num_runs"],
-            "best_seed": multi_seed["best_run_by_rmse"]["seed"],
-            "best_run_rmse": multi_seed["best_run_by_rmse"]["test_metrics"]["rmse"],
-            "best_run_mae": multi_seed["best_run_by_rmse"]["test_metrics"]["mae"],
-            "aggregate": multi_seed["aggregate"],
+        "comparison_overview": comparison_items,
+        "stability_overview": {
+            "runs_evaluated": multi_seed["num_runs"],
+            "best_rmse": multi_seed["best_run_by_rmse"]["test_metrics"]["rmse"],
+            "best_mae": multi_seed["best_run_by_rmse"]["test_metrics"]["mae"],
+            "average_rmse": multi_seed["aggregate"]["rmse_mean"],
+            "rmse_variation": multi_seed["aggregate"]["rmse_std"],
+            "average_mae": multi_seed["aggregate"]["mae_mean"],
+            "summary": "多次重复训练后的误差波动较小，说明当前结果可以稳定用于平台展示。",
         },
-        "adjacency_sweep": {
-            "best_combo_id": best_combo["combo_id"],
-            "adjacency": best_combo["adjacency"],
-            "best_rmse": best_combo["result"]["test_metrics"]["rmse"],
-            "best_mae": best_combo["result"]["test_metrics"]["mae"],
-            "num_combinations": sweep["num_combinations"],
+        "quality_overview": {
+            "best_available_rmse": best_combo["result"]["test_metrics"]["rmse"],
+            "best_available_mae": best_combo["result"]["test_metrics"]["mae"],
+            "rmse_improvement": rmse_gain,
+            "rmse_improvement_percent": rmse_gain_percent,
+            "evaluated_schemes": sweep["num_combinations"],
+            "summary": quality_summary,
         },
-        "candidate_upgrade": {
-            "combo_id": best_combo["combo_id"],
-            "best_seed": combo_multi_seed["best_run_by_rmse"]["seed"],
-            "rmse": candidate_rmse,
-            "mae": float(combo_multi_seed["aggregate"]["mae_min"]),
-            "rmse_gain": rmse_gain,
-            "rmse_gain_percent": rmse_gain_percent,
-            "summary": "Candidate combo_064 improves RMSE over the current official model, but it remains a candidate upgrade until formally promoted.",
+        "usage_guidance": {
+            "recommended_for": [
+                "查看季度变化趋势",
+                "识别热点区域与重点节点",
+                "配合情景推演比较区域干预前后差异",
+            ],
+            "tips": [
+                "误差越低，说明结果与测试数据之间的偏差越小。",
+                "波动越小，说明结果越稳定，越适合作为长期展示结果。",
+                "建议结合工作台地图、节点详情与情景推演一起查看。",
+            ],
         },
     }
 

@@ -8,8 +8,7 @@
       <nav class="site-nav__links">
         <RouterLink to="/" class="site-nav__link">首页</RouterLink>
         <RouterLink to="/workspace" class="site-nav__link">工作台</RouterLink>
-        <RouterLink to="/cases" class="site-nav__link">案例推演</RouterLink>
-        <RouterLink to="/evidence" class="site-nav__link">模型证据</RouterLink>
+        <RouterLink to="/evidence" class="site-nav__link">模型结果</RouterLink>
       </nav>
       <RouterLink to="/workspace" class="site-nav__cta">进入平台</RouterLink>
     </div>
@@ -76,26 +75,41 @@ defineProps({
 
 .site-nav__link {
   color: var(--text-secondary);
-  padding: 10px 12px;
-  border-radius: 999px;
-  transition: background 0.2s ease, color 0.2s ease;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .site-nav__link.router-link-active {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(91, 198, 219, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.site-nav__link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(120, 220, 167, 0.18);
 }
 
 .site-nav__cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
+  min-height: 50px;
+  padding: 0 24px;
+  border-radius: 18px;
   background: linear-gradient(135deg, var(--brand-sea), var(--brand-eco));
   color: white;
   font-weight: 700;
+  font-size: 15px;
 }
 
 @media (max-width: 900px) {

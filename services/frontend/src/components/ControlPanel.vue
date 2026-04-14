@@ -5,8 +5,8 @@
       <small>返回研究区全域</small>
     </button>
     <button class="control-btn" @click="toggleFullscreen">
-      <span>全屏演示</span>
-      <small>适合答辩投屏</small>
+      <span>全屏查看</span>
+      <small>适合大屏展示</small>
     </button>
     <button class="control-btn" @click="emit('toggle-layer')">
       <span>切换图层</span>

@@ -49,6 +49,10 @@ function buildGrid(nodeMap, valueMap) {
         nodeId: String(nodeId),
         lat: toNumber(node.latitude),
         lon: toNumber(node.longitude),
+        minLat: toNumber(node.min_lat),
+        maxLat: toNumber(node.max_lat),
+        minLon: toNumber(node.min_lon),
+        maxLon: toNumber(node.max_lon),
         gpp: toNumber(value),
       }
     })

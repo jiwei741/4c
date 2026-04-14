@@ -12,8 +12,7 @@
 
     <div class="workspace-header__actions">
       <RouterLink class="workspace-link" to="/">首页总览</RouterLink>
-      <RouterLink class="workspace-link" to="/cases">案例推演</RouterLink>
-      <RouterLink class="workspace-link" to="/evidence">模型证据</RouterLink>
+      <RouterLink class="workspace-link" to="/evidence">模型结果</RouterLink>
       <button class="workspace-scenario-btn" @click="$emit('open-scenario')">启动情景推演</button>
     </div>
 
@@ -72,9 +71,9 @@ defineEmits(['open-scenario'])
   z-index: 30;
   display: grid;
   grid-template-columns: 1.3fr auto;
-  gap: 18px;
-  padding: 22px 28px 18px;
-  background: linear-gradient(180deg, rgba(4, 14, 23, 0.96), rgba(4, 14, 23, 0.72));
+  gap: 14px;
+  padding: 14px 24px 12px;
+  background: linear-gradient(180deg, rgba(4, 14, 23, 0.94), rgba(4, 14, 23, 0.66));
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -82,30 +81,31 @@ defineEmits(['open-scenario'])
 .workspace-header__brand {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .workspace-header__eyebrow {
   color: var(--brand-amber);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .workspace-header h1 {
-  font-size: 30px;
+  font-size: 24px;
+  line-height: 1.15;
 }
 
 .workspace-header h1 span {
   color: var(--brand-sea);
-  font-size: 18px;
+  font-size: 15px;
   margin-left: 10px;
 }
 
 .workspace-header__lead {
-  max-width: 740px;
+  max-width: 620px;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .workspace-header__actions {
@@ -120,7 +120,7 @@ defineEmits(['open-scenario'])
 .workspace-scenario-btn {
   min-height: 42px;
   padding: 0 16px;
-  border-radius: 999px;
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -128,6 +128,8 @@ defineEmits(['open-scenario'])
   background: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .workspace-scenario-btn {
@@ -141,33 +143,33 @@ defineEmits(['open-scenario'])
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .status-pill {
-  padding: 12px 14px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .status-pill .label {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
 .status-pill .value {
   display: block;
-  margin-top: 8px;
-  font-size: 15px;
+  margin-top: 6px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 @media (max-width: 1024px) {
   .workspace-header {
     grid-template-columns: 1fr;
-    padding: 18px 18px 14px;
+    padding: 14px 16px 12px;
   }
 
   .workspace-header__actions {

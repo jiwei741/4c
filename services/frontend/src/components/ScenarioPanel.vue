@@ -134,10 +134,12 @@ function reset() {
   emissionMultiplier.value = 5.0
   predictionYears.value = 3
   result.value = null
+  window.dispatchEvent(new CustomEvent('scenario-cleared'))
   exitDrawingMode()
 }
 
 function startDrawing() {
+  window.dispatchEvent(new CustomEvent('scenario-cleared'))
   exitDrawingMode()
   step.value = 'draw'
   selectedArea.value = null
@@ -150,6 +152,7 @@ function redrawArea() {
 
 function cancelDrawing() {
   step.value = 'idle'
+  window.dispatchEvent(new CustomEvent('scenario-cleared'))
   exitDrawingMode()
 }
 
@@ -237,10 +240,11 @@ defineExpose({ open, close })
 <style scoped>
 .scenario-panel {
   position: fixed;
-  left: 280px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 20px;
+  top: calc(var(--workspace-header-offset, 296px) + 16px);
   width: 350px;
+  max-height: calc(100vh - var(--workspace-header-offset, 296px) - 32px);
+  overflow: auto;
   padding: 20px;
   z-index: 35;
 }
@@ -272,7 +276,7 @@ defineExpose({ open, close })
 .scenario-panel__close {
   width: 34px;
   height: 34px;
-  border-radius: 999px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
@@ -299,7 +303,7 @@ defineExpose({ open, close })
 .param-card,
 .result-card {
   padding: 16px;
-  border-radius: 16px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -345,7 +349,7 @@ defineExpose({ open, close })
 
 .param-card button,
 .param-card select {
-  border-radius: 999px;
+  border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);

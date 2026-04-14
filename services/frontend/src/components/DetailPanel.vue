@@ -25,10 +25,20 @@
         <span>风险分级</span>
         <strong>{{ riskText }}</strong>
       </div>
+      <div class="detail-row" v-if="data.landcoverLabel">
+        <span>主导地类</span>
+        <strong>{{ data.landcoverLabel }}</strong>
+      </div>
       <div class="detail-row" v-if="data.comparisonGap !== undefined && data.comparisonGap !== null">
         <span>相对基线变化</span>
         <strong :class="data.comparisonGap >= 0 ? 'positive' : 'negative'">
           {{ data.comparisonGap >= 0 ? '+' : '' }}{{ data.comparisonGap.toFixed(4) }}
+        </strong>
+      </div>
+      <div class="detail-row" v-if="data.scenarioDelta !== undefined && data.scenarioDelta !== null">
+        <span>情景变化</span>
+        <strong :class="data.scenarioDelta >= 0 ? 'positive' : 'negative'">
+          {{ data.scenarioDelta >= 0 ? '+' : '' }}{{ Number(data.scenarioDelta).toFixed(4) }}
         </strong>
       </div>
 
@@ -54,9 +64,18 @@ const x = ref(100)
 const y = ref(100)
 const data = ref({})
 
+const safeTopOffset = computed(() => {
+  const workspaceRoot = document.querySelector('.workspace-page')
+  if (!workspaceRoot) return 308
+
+  const rawValue = getComputedStyle(workspaceRoot).getPropertyValue('--workspace-header-offset')
+  const parsed = Number.parseFloat(rawValue)
+  return (Number.isFinite(parsed) ? parsed : 296) + 12
+})
+
 const positionStyle = computed(() => ({
   left: `${Math.max(16, x.value)}px`,
-  top: `${Math.max(180, y.value)}px`,
+  top: `${Math.max(safeTopOffset.value, y.value)}px`,
 }))
 
 const valueClass = computed(() => {

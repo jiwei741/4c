@@ -75,6 +75,10 @@ def create_app() -> Any:
     def evidence_summary() -> dict[str, Any]:
         return service.get_evidence_summary()
 
+    @app.post("/api/v1/assistant/faq")
+    def faq_assistant(payload: dict[str, Any]) -> dict[str, Any]:
+        return service.get_faq_assistant_reply(payload)
+
     @app.get("/api/v1/models/{model_key}")
     def model_detail(model_key: str) -> dict[str, Any]:
         try:

@@ -24,6 +24,23 @@ async function fetchJson(path, params) {
   return response.json()
 }
 
+async function postJson(path, payload = {}) {
+  const response = await fetch(buildApiUrl(path), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(message || `Request failed: ${response.status}`)
+  }
+
+  return response.json()
+}
+
 export function getDashboard() {
   return fetchJson('/api/v1/dashboard')
 }
@@ -58,4 +75,8 @@ export function getScenarioExample(scenarioKey) {
 
 export function getGridNodes() {
   return fetchJson('/api/v1/study-area/grid-nodes')
+}
+
+export function askFaqAssistant(message, history = []) {
+  return postJson('/api/v1/assistant/faq', { message, history })
 }

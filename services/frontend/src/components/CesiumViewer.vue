@@ -3,7 +3,7 @@ import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as Cesium from 'cesium'
 
 import HeatMapLayer from './HeatMapLayer.vue'
-import { getPredictionLayer } from '../api/platform.js'
+import { getPredictionAnalytics } from '../api/platform.js'
 import { generateMockCarbonData } from '../mock/carbonData.js'
 
 const props = defineProps({
@@ -21,6 +21,7 @@ const cesiumContainer = ref(null)
 const viewerReady = ref(null)
 const gridData = ref([])
 const layerVisible = ref(true)
+const baselineGridData = ref([])
 
 let viewer = null
 let drawHandler = null
@@ -31,6 +32,7 @@ let enterDrawingModeListener = null
 let exitDrawingModeListener = null
 let isDrawingMode = false
 let drawingEntity = null
+let drawingOutlineEntity = null
 let hintEntity = null
 let startPosition = null
 let tempRectangle = null
@@ -63,26 +65,80 @@ async function loadPredictionLayer(horizon) {
   const targetHorizon = horizon || props.horizon || defaultHorizon
 
   try {
-    const payload = await getPredictionLayer({ horizon: targetHorizon })
+    const payload = await getPredictionAnalytics({ horizon: targetHorizon })
     const items = Array.isArray(payload.items) ? payload.items : []
 
     if (items.length === 0) {
       throw new Error('Prediction layer returned no items.')
     }
 
-    gridData.value = items.map((item) => ({
+    baselineGridData.value = items.map((item) => ({
       nodeId: item.node_id,
       lat: Number(item.latitude),
       lon: Number(item.longitude),
+      minLat: Number(item.min_lat),
+      maxLat: Number(item.max_lat),
+      minLon: Number(item.min_lon),
+      maxLon: Number(item.max_lon),
       gpp: Number(item.value),
       riskLevel: item.risk_level || null,
       riskScore: item.risk_score ?? null,
       comparisonGap: item.comparison_gap ?? null,
+      landcoverLabel: item.dominant_landcover || null,
+      landcoverRatios: item.landcover_ratios || {},
+      vegetationAreaRatio: item.vegetation_area_ratio ?? null,
+      ndviMean: item.ndvi_mean ?? null,
     }))
+    applyActiveLayer()
   } catch (error) {
     console.error('Failed to load real prediction layer, using mock data:', error)
-    gridData.value = generateMockCarbonData(targetHorizon).grid
+    baselineGridData.value = generateMockCarbonData(targetHorizon).grid
+    applyActiveLayer()
   }
+}
+
+function buildScenarioGrid() {
+  const result = props.scenarioResult
+  if (!result?.scenarioData?.grid?.length) {
+    return null
+  }
+
+  const targetHorizon = result.forecastHorizon || result.scenarioData.date
+  const currentHorizon = props.horizon || defaultHorizon
+  if (targetHorizon && currentHorizon && targetHorizon !== currentHorizon) {
+    return null
+  }
+
+  const changedNodeIds = new Set((result.backendSummary?.changed_nodes || []).map((item) => String(item)))
+  const baselineMap = new Map(baselineGridData.value.map((item) => [String(item.nodeId), item]))
+
+  return result.scenarioData.grid.map((point) => {
+    const baseline = baselineMap.get(String(point.nodeId))
+    return {
+      nodeId: String(point.nodeId),
+      lat: Number(point.lat),
+      lon: Number(point.lon),
+      minLat: Number(point.minLat ?? baseline?.minLat),
+      maxLat: Number(point.maxLat ?? baseline?.maxLat),
+      minLon: Number(point.minLon ?? baseline?.minLon),
+      maxLon: Number(point.maxLon ?? baseline?.maxLon),
+      gpp: Number(point.gpp),
+      riskLevel: baseline?.riskLevel || null,
+      riskScore: baseline?.riskScore ?? null,
+      comparisonGap: baseline?.comparisonGap ?? null,
+      landcoverLabel: baseline?.landcoverLabel || null,
+      landcoverRatios: baseline?.landcoverRatios || {},
+      vegetationAreaRatio: baseline?.vegetationAreaRatio ?? null,
+      ndviMean: baseline?.ndviMean ?? null,
+      scenarioDelta: Number(point.gpp) - Number(baseline?.gpp || 0),
+      isScenarioChanged: changedNodeIds.has(String(point.nodeId)),
+    }
+  })
+}
+
+function applyActiveLayer() {
+  const scenarioGrid = buildScenarioGrid()
+  gridData.value = scenarioGrid || baselineGridData.value
 }
 
 function showDrawingHint() {
@@ -109,15 +165,69 @@ function removeDrawingHint() {
     viewer.entities.remove(hintEntity)
   }
   hintEntity = null
+  viewer?.scene.requestRender()
+}
+
+function toRectangleCoordinates(rectangle) {
+  return Cesium.Rectangle.fromDegrees(rectangle.west, rectangle.south, rectangle.east, rectangle.north)
+}
+
+function toRectangleOutline(rectangle) {
+  return Cesium.Cartesian3.fromDegreesArray([
+    rectangle.west,
+    rectangle.south,
+    rectangle.east,
+    rectangle.south,
+    rectangle.east,
+    rectangle.north,
+    rectangle.west,
+    rectangle.north,
+    rectangle.west,
+    rectangle.south,
+  ])
+}
+
+function ensureDrawingOverlay() {
+  if (!viewer || drawingEntity) return
+
+  drawingEntity = viewer.entities.add({
+    rectangle: {
+      coordinates: new Cesium.CallbackProperty(() => {
+        if (!tempRectangle) return undefined
+        return toRectangleCoordinates(tempRectangle)
+      }, false),
+      material: Cesium.Color.fromCssColorString('#58d9a0').withAlpha(0.16),
+      classificationType: Cesium.ClassificationType.BOTH,
+      outline: false,
+    },
+  })
+
+  drawingOutlineEntity = viewer.entities.add({
+    polyline: {
+      positions: new Cesium.CallbackProperty(() => {
+        if (!tempRectangle) return []
+        return toRectangleOutline(tempRectangle)
+      }, false),
+      width: 4,
+      clampToGround: true,
+      material: Cesium.Color.fromCssColorString('#6fe6b4'),
+      depthFailMaterial: Cesium.Color.fromCssColorString('#f0c16b'),
+    },
+  })
 }
 
 function clearDrawingOverlay() {
   if (viewer && drawingEntity) {
     viewer.entities.remove(drawingEntity)
   }
+  if (viewer && drawingOutlineEntity) {
+    viewer.entities.remove(drawingOutlineEntity)
+  }
   drawingEntity = null
+  drawingOutlineEntity = null
   startPosition = null
   tempRectangle = null
+  viewer?.scene.requestRender()
 }
 
 function enterDrawingMode() {
@@ -129,6 +239,7 @@ function enterDrawingMode() {
   viewer.scene.screenSpaceCameraController.enableInputs = false
   viewer.canvas.style.cursor = 'crosshair'
   showDrawingHint()
+  viewer.scene.requestRender()
   console.log('[CesiumViewer] Drawing mode activated, isDrawingMode:', isDrawingMode)
 }
 
@@ -139,6 +250,7 @@ function exitDrawingMode() {
   viewer.canvas.style.cursor = 'default'
   clearDrawingOverlay()
   removeDrawingHint()
+  viewer.scene.requestRender()
 }
 
 function setupDrawingHandler() {
@@ -163,6 +275,14 @@ function setupDrawingHandler() {
       lon: Cesium.Math.toDegrees(cartographic.longitude),
       lat: Cesium.Math.toDegrees(cartographic.latitude),
     }
+    tempRectangle = {
+      west: startPosition.lon,
+      south: startPosition.lat,
+      east: startPosition.lon,
+      north: startPosition.lat,
+    }
+    ensureDrawingOverlay()
+    viewer.scene.requestRender()
   }, Cesium.ScreenSpaceEventType.LEFT_DOWN)
 
   drawHandler.setInputAction((movement) => {
@@ -183,32 +303,8 @@ function setupDrawingHandler() {
     const north = Math.max(startPosition.lat, current.lat)
 
     tempRectangle = { west, south, east, north }
-
-    if (drawingEntity) {
-      drawingEntity.rectangle.coordinates = new Cesium.Rectangle(
-        Cesium.Math.toRadians(west),
-        Cesium.Math.toRadians(south),
-        Cesium.Math.toRadians(east),
-        Cesium.Math.toRadians(north),
-      )
-      return
-    }
-
-    drawingEntity = viewer.entities.add({
-      rectangle: {
-        coordinates: new Cesium.Rectangle(
-          Cesium.Math.toRadians(west),
-          Cesium.Math.toRadians(south),
-          Cesium.Math.toRadians(east),
-          Cesium.Math.toRadians(north),
-        ),
-        material: Cesium.Color.fromCssColorString('rgba(228, 178, 91, 0.25)'),
-        outline: true,
-        outlineColor: Cesium.Color.fromCssColorString('#f0c16b'),
-        outlineWidth: 2,
-        classificationType: Cesium.ClassificationType.TERRAIN,
-      },
-    })
+    ensureDrawingOverlay()
+    viewer.scene.requestRender()
   }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
 
   drawHandler.setInputAction(() => {
@@ -239,6 +335,7 @@ function setupDrawingHandler() {
     )
 
     startPosition = null
+    viewer.scene.requestRender()
   }, Cesium.ScreenSpaceEventType.LEFT_UP)
 }
 
@@ -300,6 +397,14 @@ watch(
   (nextHorizon) => {
     loadPredictionLayer(nextHorizon)
   },
+)
+
+watch(
+  () => props.scenarioResult,
+  () => {
+    applyActiveLayer()
+  },
+  { deep: true },
 )
 
 onMounted(async () => {
