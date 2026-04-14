@@ -83,7 +83,20 @@ PLATFORM_PORT=9000
 http://localhost:9000
 ```
 
-## 7. 如果第一次启动较慢
+## 7. 如需启用平台问答助手的智能回复
+
+可编辑当前目录下的 `.env` 文件，填写以下任一密钥：
+
+```env
+DEEPSEEK_API_KEY=
+LLM_CHAT_API_KEY=
+LLM_CHAT_MODEL=deepseek-chat
+LLM_CHAT_ENDPOINT=https://api.deepseek.com/v1/chat/completions
+```
+
+如果不填写，平台问答助手仍可使用，但会以内置引导回答为主。
+
+## 8. 如果第一次启动较慢
 
 这是正常现象。
 
@@ -95,7 +108,7 @@ http://localhost:9000
 
 后续再次启动会更快。
 
-## 8. 常见问题
+## 9. 常见问题
 
 ### 无法打开页面
 
@@ -114,7 +127,7 @@ docker compose pull
 docker compose up -d
 ```
 
-## 9. 当前部署特点
+## 10. 当前部署特点
 
 - 前端和后端已经打包为 Docker 镜像
 - 页面、接口和情景推演都通过同一个入口访问

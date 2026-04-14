@@ -21,6 +21,10 @@ PLATFORM_PORT=$PlatformPort
 BACKEND_INTERNAL_PORT=$BackendInternalPort
 BACKEND_IMAGE=$RegistryNamespace/spatio-eco-backend:$Tag
 FRONTEND_IMAGE=$RegistryNamespace/spatio-eco-frontend:$Tag
+DEEPSEEK_API_KEY=
+LLM_CHAT_API_KEY=
+LLM_CHAT_MODEL=deepseek-chat
+LLM_CHAT_ENDPOINT=https://api.deepseek.com/v1/chat/completions
 "@
 
 Set-Content -Path $targetPath -Value $content -Encoding utf8

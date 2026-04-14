@@ -44,8 +44,8 @@
 
 创建完成后，最终镜像名会像这样：
 
-- `your-dockerhub-username/spatio-eco-backend:v1.0.0`
-- `your-dockerhub-username/spatio-eco-frontend:v1.0.0`
+- `your-dockerhub-username/spatio-eco-backend:v1.0.1`
+- `your-dockerhub-username/spatio-eco-frontend:v1.0.1`
 
 ## 4. 我们怎么发布镜像
 
@@ -60,18 +60,18 @@ docker login
 在仓库根目录执行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/docker/build_release_images.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.0
+powershell -ExecutionPolicy Bypass -File scripts/docker/build_release_images.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.1
 ```
 
 这会构建两个镜像：
 
-- `your-dockerhub-username/spatio-eco-backend:v1.0.0`
-- `your-dockerhub-username/spatio-eco-frontend:v1.0.0`
+- `your-dockerhub-username/spatio-eco-backend:v1.0.1`
+- `your-dockerhub-username/spatio-eco-frontend:v1.0.1`
 
 ### 第三步：推送镜像
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/docker/push_release_images.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.0
+powershell -ExecutionPolicy Bypass -File scripts/docker/push_release_images.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.1
 ```
 
 ## 5. 怎么给使用方交付
@@ -98,14 +98,18 @@ spatio-eco-release/
 COMPOSE_PROJECT_NAME=spatio-eco
 PLATFORM_PORT=8080
 BACKEND_INTERNAL_PORT=8000
-BACKEND_IMAGE=your-dockerhub-username/spatio-eco-backend:v1.0.0
-FRONTEND_IMAGE=your-dockerhub-username/spatio-eco-frontend:v1.0.0
+BACKEND_IMAGE=your-dockerhub-username/spatio-eco-backend:v1.0.1
+FRONTEND_IMAGE=your-dockerhub-username/spatio-eco-frontend:v1.0.1
+DEEPSEEK_API_KEY=
+LLM_CHAT_API_KEY=
+LLM_CHAT_MODEL=deepseek-chat
+LLM_CHAT_ENDPOINT=https://api.deepseek.com/v1/chat/completions
 ```
 
 ### 方式二：用脚本生成
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/docker/write_release_env.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.0 -OutputPath .env.release
+powershell -ExecutionPolicy Bypass -File scripts/docker/write_release_env.ps1 -RegistryNamespace your-dockerhub-username -Tag v1.0.1 -OutputPath .env.release
 ```
 
 ## 7. 使用方如何启动
@@ -137,7 +141,7 @@ docker compose -f docker-compose.release.yml --env-file .env.release logs -f
 
 ## 10. 版本升级方式
 
-如果后续发布新版本，例如 `v1.0.1`：
+如果后续发布新版本，例如 `v1.0.2`：
 
 1. 我们重新构建并推送新镜像
 2. 使用方只需要把 `.env.release` 里的镜像 tag 改成新版本

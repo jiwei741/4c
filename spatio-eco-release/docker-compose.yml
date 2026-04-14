@@ -7,6 +7,10 @@ services:
       BACKEND_PORT: ${BACKEND_INTERNAL_PORT:-8000}
       INFERENCE_PYTHON_EXECUTABLE: /usr/local/bin/python
       PYTHONUNBUFFERED: "1"
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      LLM_CHAT_API_KEY: ${LLM_CHAT_API_KEY:-}
+      LLM_CHAT_MODEL: ${LLM_CHAT_MODEL:-deepseek-chat}
+      LLM_CHAT_ENDPOINT: ${LLM_CHAT_ENDPOINT:-https://api.deepseek.com/v1/chat/completions}
     expose:
       - "${BACKEND_INTERNAL_PORT:-8000}"
 
