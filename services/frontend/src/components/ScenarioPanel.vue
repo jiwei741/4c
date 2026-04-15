@@ -121,6 +121,7 @@ const statusClass = computed(() => ({
 function open() {
   visible.value = true
   reset()
+  startDrawing()
 }
 
 function close() {

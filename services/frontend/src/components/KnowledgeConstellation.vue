@@ -233,12 +233,12 @@ onBeforeUnmount(() => {
 <style scoped>
 .knowledge-graph {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .knowledge-graph__head {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .knowledge-graph__head small {
@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
 
 .knowledge-graph__canvas-shell {
   position: relative;
-  min-height: 600px;
+  min-height: 390px;
   overflow: hidden;
   border-radius: 32px;
   background:
@@ -274,17 +274,17 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   width: 100%;
-  min-height: 600px;
+  min-height: 390px;
 }
 
 .knowledge-graph__metrics {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .knowledge-graph__metric {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-radius: 18px;
   background: rgba(7, 22, 35, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -298,14 +298,14 @@ onBeforeUnmount(() => {
 
 .knowledge-graph__metric strong {
   display: block;
-  margin-top: 8px;
-  font-size: 18px;
+  margin-top: 6px;
+  font-size: 16px;
 }
 
 @media (max-width: 980px) {
   .knowledge-graph__canvas-shell,
   .knowledge-graph__canvas {
-    min-height: 560px;
+    min-height: 380px;
   }
 }
 

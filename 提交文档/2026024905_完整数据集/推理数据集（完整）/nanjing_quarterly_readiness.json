@@ -1,0 +1,61 @@
+{
+  "sentinel2": {
+    "path": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\sentinel2_features.csv",
+    "exists": true,
+    "size_bytes": 507960
+  },
+  "grid_nodes": {
+    "path": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\grid_nodes.csv",
+    "exists": true,
+    "size_bytes": 35893
+  },
+  "era5_raw": {
+    "path": "D:\\4c\\data\\raw\\era5\\nanjing\\era5_land_monthly_nanjing_2020_2024.nc",
+    "exists": true,
+    "size_bytes": 181574,
+    "container_type": "zip"
+  },
+  "era5_monthly_points": {
+    "path": "D:\\4c\\data\\processed\\features\\nanjing\\monthly\\era5_monthly_points.csv",
+    "exists": true,
+    "size_bytes": 3538858
+  },
+  "era5_quarterly": {
+    "path": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\era5_features.csv",
+    "exists": true,
+    "size_bytes": 1010241
+  },
+  "gpp_monthly": {
+    "path": "D:\\4c\\data\\raw\\gpp\\nanjing\\monthly",
+    "exists": true,
+    "existing_count": 0,
+    "invalid_filenames": [],
+    "missing_count": 60,
+    "missing_preview": [
+      "202001",
+      "202002",
+      "202003",
+      "202004",
+      "202005",
+      "202006",
+      "202007",
+      "202008",
+      "202009",
+      "202010",
+      "202011",
+      "202012"
+    ]
+  },
+  "gpp_appeears_8day": {
+    "path": "D:\\4c\\data\\raw\\gpp\\nanjing\\appeears_mod17a2hgf_061",
+    "exists": true,
+    "tif_count": 231
+  },
+  "labels": {
+    "path": "D:\\4c\\data\\processed\\features\\nanjing\\quarterly\\labels.csv",
+    "exists": true,
+    "size_bytes": 127241
+  },
+  "training_ready": true,
+  "next_step": "run build_training_dataset.py with configs/nanjing_quarterly_dataset.yaml, then train lstm_baseline_quarterly.yaml and stgnn_gcn_lstm_quarterly.yaml"
+}

@@ -1,0 +1,31 @@
+﻿文件夹名称：configs
+
+本文件夹为官网提交材料的组成部分。
+
+主要文件：
+- lstm_baseline.yaml
+- lstm_baseline_quarterly.yaml
+- lstm_baseline_quarterly_qc_edgar_identity.yaml
+- lstm_baseline_quarterly_qc_edgar_multistep.yaml
+- lstm_baseline_quarterly_qc_edgar_norm.yaml
+- lstm_baseline_quarterly_qc_edgar_norm_nonneg.yaml
+- lstm_baseline_quarterly_qc_identity.yaml
+- nanjing_quarterly_dataset.yaml
+- nanjing_quarterly_dataset_qc.yaml
+- nanjing_quarterly_dataset_qc_edgar.yaml
+- nanjing_quarterly_dataset_qc_edgar_hybrid.yaml
+- nanjing_quarterly_dataset_qc_edgar_knn6.yaml
+- nanjing_quarterly_dataset_qc_edgar_wind.yaml
+- real_dataset_template.yaml
+- stgnn_gcn_lstm.yaml
+- stgnn_gcn_lstm_quarterly.yaml
+- stgnn_gcn_lstm_quarterly_qc_clip95.yaml
+- stgnn_gcn_lstm_quarterly_qc_edgar_hybrid_multistep.yaml
+- stgnn_gcn_lstm_quarterly_qc_edgar_hybrid_norm.yaml
+- stgnn_gcn_lstm_quarterly_qc_edgar_identity.yaml
+- stgnn_gcn_lstm_quarterly_qc_edgar_knn6_norm.yaml
+- stgnn_gcn_lstm_quarterly_qc_edgar_norm.yaml
+- stgnn_gcn_lstm_quarterly_qc_edgar_wind_norm.yaml
+- stgnn_gcn_lstm_quarterly_qc_edgar_wind_norm_nonneg.yaml
+- stgnn_gcn_lstm_quarterly_qc_identity.yaml
+- stgnn_gcn_lstm_quarterly_qc_log1p.yaml

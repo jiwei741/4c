@@ -1,0 +1,49 @@
+study_area:
+  name: nanjing_quarterly
+
+grid:
+  path: ../../data/processed/features/nanjing/quarterly/grid_nodes.csv
+  node_id_column: node_id
+  lat_column: latitude
+  lon_column: longitude
+
+sources:
+  sentinel2:
+    path: ../../data/processed/features/nanjing/quarterly/sentinel2_features.csv
+    timestamp_column: timestamp
+    node_id_column: node_id
+    feature_columns:
+      - vegetation_area_ratio
+      - ndvi_mean
+      - forest_ratio
+      - farmland_ratio
+      - water_ratio
+      - built_ratio
+  era5:
+    path: ../../data/processed/features/nanjing/quarterly/era5_features.csv
+    timestamp_column: timestamp
+    node_id_column: node_id
+    feature_columns:
+      - land_surface_temperature
+      - u10_wind
+      - v10_wind
+      - precipitation
+
+labels:
+  path: ../../data/processed/features/nanjing/quarterly/labels.csv
+  timestamp_column: timestamp
+  node_id_column: node_id
+  target_column: net_carbon_flux
+
+adjacency:
+  method: radius
+  radius_km: 12.0
+  symmetric: true
+
+options:
+  timestamps: intersection
+  missing_value_strategy: error
+
+output:
+  path: ../../data/processed/inference/nanjing_quarterly_v1.npz
+  metadata_path: ../../data/processed/inference/nanjing_quarterly_v1.meta.json

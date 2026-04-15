@@ -1,0 +1,18 @@
+{
+  "preset": "greening_restoration",
+  "intensity": 2,
+  "node_ids": [
+    "133",
+    "134"
+  ],
+  "graph_propagation": {
+    "hops": 2,
+    "attenuation": 0.65,
+    "blend_mode": "sum"
+  },
+  "temporal_profile": {
+    "mode": "last",
+    "start_weight": 0.35,
+    "end_weight": 1
+  }
+}

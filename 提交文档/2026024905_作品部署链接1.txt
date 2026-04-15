@@ -1,0 +1,7 @@
+﻿作品部署链接1：GitHub Release
+
+版本页面：
+https://github.com/jiwei741/4c/releases/tag/v1.0.1
+
+说明：
+该链接用于获取作品发布版本、部署包压缩文件与版本说明。

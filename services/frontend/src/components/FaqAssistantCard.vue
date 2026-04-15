@@ -197,8 +197,12 @@ function goToAction(action) {
 <style scoped>
 .faq-assistant {
   display: grid;
-  gap: 18px;
-  padding: 24px;
+  grid-template-rows: auto auto minmax(170px, 1fr) auto;
+  gap: 14px;
+  padding: 20px 22px;
+  width: min(100%, 100%);
+  min-height: 400px;
+  align-content: start;
   border-radius: 30px;
   background:
     radial-gradient(circle at 10% 0%, rgba(95, 208, 209, 0.1), transparent 24%),
@@ -221,7 +225,7 @@ function goToAction(action) {
 .faq-assistant__head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
   position: relative;
   z-index: 1;
@@ -294,13 +298,14 @@ function goToAction(action) {
 .faq-assistant__quick {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 6px;
   position: relative;
   z-index: 1;
+  min-width: 0;
 }
 
 .faq-assistant__quick-chip {
-  padding: 11px 15px;
+  padding: 9px 14px;
   border-radius: 16px;
   border: 1px solid rgba(95, 208, 209, 0.12);
   background:
@@ -321,14 +326,27 @@ function goToAction(action) {
 
 .faq-assistant__timeline {
   display: grid;
-  gap: 12px;
-  max-height: 336px;
+  gap: 8px;
+  min-height: 180px;
+  max-height: 250px;
   overflow: auto;
   padding-right: 8px;
   position: relative;
   z-index: 1;
   scrollbar-width: thin;
   scrollbar-color: rgba(95, 208, 209, 0.72) rgba(6, 19, 31, 0.64);
+}
+
+.faq-assistant__composer,
+.faq-assistant__quick,
+.faq-assistant__timeline,
+.faq-assistant__head {
+  width: 100%;
+}
+
+.faq-assistant__timeline,
+.faq-assistant__composer {
+  max-width: 100%;
 }
 
 .faq-assistant__timeline::-webkit-scrollbar {
@@ -350,8 +368,8 @@ function goToAction(action) {
 
 .faq-message {
   display: grid;
-  gap: 10px;
-  padding: 15px 16px 14px;
+  gap: 8px;
+  padding: 12px 14px 12px;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   position: relative;
@@ -416,15 +434,16 @@ function goToAction(action) {
 .faq-assistant__composer {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 12px;
+  gap: 8px;
+  margin-top: auto;
   position: relative;
   z-index: 1;
 }
 
 .faq-assistant__input {
   width: 100%;
-  min-height: 54px;
-  padding: 0 18px;
+  min-height: 48px;
+  padding: 0 16px;
   border-radius: 18px;
   border: 1px solid rgba(95, 208, 209, 0.14);
   background:
@@ -443,6 +462,6 @@ function goToAction(action) {
 }
 
 .faq-assistant__send {
-  min-width: 110px;
+  min-width: 96px;
 }
 </style>

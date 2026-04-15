@@ -1,0 +1,10 @@
+﻿作品部署链接2：Docker Hub
+
+后端镜像：
+https://hub.docker.com/r/jiwei741/spatio-eco-backend
+
+前端镜像：
+https://hub.docker.com/r/jiwei741/spatio-eco-frontend
+
+说明：
+该链接用于获取作品 Docker 镜像并完成部署。

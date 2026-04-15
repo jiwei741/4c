@@ -1,0 +1,83 @@
+:root {
+  --bg-deep: #071421;
+  --bg-surface: rgba(10, 28, 45, 0.88);
+  --bg-soft: #0f2436;
+  --bg-card: rgba(13, 31, 49, 0.78);
+  --border-strong: rgba(120, 194, 166, 0.34);
+  --border-soft: rgba(122, 166, 191, 0.16);
+  --text-primary: #edf4f8;
+  --text-secondary: rgba(237, 244, 248, 0.74);
+  --text-muted: rgba(237, 244, 248, 0.52);
+  --brand-sea: #1f8fbc;
+  --brand-eco: #4fbf7f;
+  --brand-amber: #e4b25b;
+  --brand-coral: #ef7d57;
+  --shadow-panel: 0 24px 72px rgba(0, 0, 0, 0.34);
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --content-max: 1240px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(79, 191, 127, 0.14), transparent 34%),
+    radial-gradient(circle at top right, rgba(31, 143, 188, 0.18), transparent 28%),
+    linear-gradient(180deg, #05111d 0%, #081724 42%, #09111a 100%);
+  color: var(--text-primary);
+  font-family: 'Source Han Sans SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: 'Source Han Serif SC', 'Noto Serif SC', 'STSong', serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+p {
+  margin: 0;
+}
+
+#app {
+  min-height: 100vh;
+}

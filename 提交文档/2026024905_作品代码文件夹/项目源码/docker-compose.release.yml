@@ -1,0 +1,23 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    restart: unless-stopped
+    environment:
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: ${BACKEND_INTERNAL_PORT:-8000}
+      INFERENCE_PYTHON_EXECUTABLE: /usr/local/bin/python
+      PYTHONUNBUFFERED: "1"
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      LLM_CHAT_API_KEY: ${LLM_CHAT_API_KEY:-}
+      LLM_CHAT_MODEL: ${LLM_CHAT_MODEL:-deepseek-chat}
+      LLM_CHAT_ENDPOINT: ${LLM_CHAT_ENDPOINT:-https://api.deepseek.com/v1/chat/completions}
+    expose:
+      - "${BACKEND_INTERNAL_PORT:-8000}"
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${PLATFORM_PORT:-8080}:80"

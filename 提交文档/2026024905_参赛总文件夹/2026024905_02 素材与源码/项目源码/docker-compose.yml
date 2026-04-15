@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/backend-runtime.Dockerfile
+    container_name: spatio-eco-backend
+    restart: unless-stopped
+    environment:
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: ${BACKEND_INTERNAL_PORT:-8000}
+      INFERENCE_PYTHON_EXECUTABLE: /usr/local/bin/python
+      PYTHONUNBUFFERED: "1"
+    expose:
+      - "${BACKEND_INTERNAL_PORT:-8000}"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: services/frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+    container_name: spatio-eco-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${PLATFORM_PORT:-8080}:80"

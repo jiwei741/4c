@@ -1,0 +1,47 @@
+{
+    "id":  "2026024905-codex-collaboration-record",
+    "title":  "天穹智算智能体协作关键交互记录（整理摘录）",
+    "note":  "本文件为关键交互摘录，用于说明智能体在需求理解、工程实现、实验自动化和结果解释中的辅助作用。",
+    "messages":  [
+                     {
+                         "role":  "user",
+                         "content":  "请检查新合并的前端修改，说明运行条件，并补充成一键前后端启动脚本。"
+                     },
+                     {
+                         "role":  "assistant",
+                         "content":  "已梳理前后端运行条件，补充 Windows PowerShell 一键启动/停止脚本，统一读取根目录环境变量并自动启动后端 uvicorn 与前端 Vite。"
+                     },
+                     {
+                         "role":  "user",
+                         "content":  "继续排查季度数据接入情况，判断 time_analysis.csv 是否仍然需要，并检查 data_for_memberA 是否能作为当前训练源。"
+                     },
+                     {
+                         "role":  "assistant",
+                         "content":  "已对比 time_analysis.csv、data_for_memberA 与当前 processed 特征表，确认项目已接入同源季度数据，随后切换到高精度季度数据源并移除当前运行链路中的 SAM2 依赖。"
+                     },
+                     {
+                         "role":  "user",
+                         "content":  "把 multi-seed 和 adjacency sweep 的脚本补出来，但不要破坏平台现有接口。"
+                     },
+                     {
+                         "role":  "assistant",
+                         "content":  "已新增多 seed 实验脚本与邻接参数扫描脚本，实验输出默认写入独立目录，避免覆盖平台正式模型目录，并保留现有接口不变。"
+                     },
+                     {
+                         "role":  "user",
+                         "content":  "检查训练后的模型是否优于之前版本，如果没有提升就继续优化。"
+                     },
+                     {
+                         "role":  "assistant",
+                         "content":  "已完成正式模型与候选实验结果比对，确认 adjacency sweep 找到更优候选配置，并通过 multi-seed 复验验证其提升幅度与稳定性。"
+                     },
+                     {
+                         "role":  "user",
+                         "content":  "平台前端继续优化情景推演对比体验。"
+                     },
+                     {
+                         "role":  "assistant",
+                         "content":  "已将前端重构为首页总览、工作台、模型结果和使用引导页，补充 FAQ 助手、知识谱系、情景推演全屏对比与受影响节点标注，并统一页面设计语言。"
+                     }
+                 ]
+}

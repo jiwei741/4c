@@ -1,0 +1,28 @@
+experiment_name: lstm_baseline_nanjing_quarterly_qc_edgar_identity
+
+model:
+  name: lstm_baseline
+  hidden_dim: 64
+  lstm_layers: 1
+  dropout: 0.1
+
+data:
+  input_window: 4
+  horizon: 1
+  target_dim: 1
+
+training:
+  batch_size: 4
+  epochs: 40
+  learning_rate: 0.001
+  weight_decay: 0.0
+  target_normalization: true
+  target_transform:
+    name: identity
+  train_ratio: 0.6
+  val_ratio: 0.2
+  seed: 42
+  device: auto
+
+output:
+  dir: outputs/lstm_baseline_nanjing_quarterly_qc_edgar_identity

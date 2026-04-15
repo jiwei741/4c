@@ -36,6 +36,8 @@ let drawingOutlineEntity = null
 let hintEntity = null
 let startPosition = null
 let tempRectangle = null
+let studyAreaRectangle = null
+let hasPerformedInitialFit = false
 
 const defaultHorizon = '2025-Q1'
 const gaodeBaseMapUrl = 'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
@@ -139,6 +141,41 @@ function buildScenarioGrid() {
 function applyActiveLayer() {
   const scenarioGrid = buildScenarioGrid()
   gridData.value = scenarioGrid || baselineGridData.value
+  updateStudyAreaBounds(gridData.value)
+}
+
+function updateStudyAreaBounds(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return
+  }
+
+  const west = Math.min(...items.map((item) => Number(item.minLon ?? item.lon)).filter(Number.isFinite))
+  const east = Math.max(...items.map((item) => Number(item.maxLon ?? item.lon)).filter(Number.isFinite))
+  const south = Math.min(...items.map((item) => Number(item.minLat ?? item.lat)).filter(Number.isFinite))
+  const north = Math.max(...items.map((item) => Number(item.maxLat ?? item.lat)).filter(Number.isFinite))
+
+  if (![west, east, south, north].every(Number.isFinite)) {
+    return
+  }
+
+  studyAreaRectangle = Cesium.Rectangle.fromDegrees(west, south, east, north)
+}
+
+function flyToStudyArea(duration = 1.2) {
+  if (!viewer) return
+
+  if (studyAreaRectangle) {
+    viewer.camera.flyTo({
+      destination: studyAreaRectangle,
+      duration,
+    })
+    return
+  }
+
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 180000),
+    duration,
+  })
 }
 
 function showDrawingHint() {
@@ -351,10 +388,11 @@ function setupClickHandler() {
   clickHandler.setInputAction((movement) => {
     if (isDrawingMode) return
 
-    const picked = viewer.scene.pick(movement.position)
-    if (!picked?.id?.properties?.pointData) return
+    const pickedItems = viewer.scene.drillPick(movement.position) || []
+    const pickedEntity = pickedItems.find((entry) => entry?.id?.properties?.pointData)
+    if (!pickedEntity?.id?.properties?.pointData) return
 
-    const data = picked.id.properties.pointData.getValue()
+    const data = pickedEntity.id.properties.pointData.getValue()
     window.dispatchEvent(
       new CustomEvent('point-selected', {
         detail: {
@@ -369,10 +407,7 @@ function setupClickHandler() {
 
 function bindWindowEvents() {
   resetViewListener = () => {
-    viewer?.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 80000),
-      duration: 1.3,
-    })
+    flyToStudyArea(1.3)
   }
   window.addEventListener('reset-view', resetViewListener)
 
@@ -437,12 +472,13 @@ onMounted(async () => {
 
   viewerReady.value = viewer
 
-  viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(118.8, 32.0, 80000),
-    duration: 0,
-  })
+  flyToStudyArea(0)
 
   await loadPredictionLayer(props.horizon)
+  if (!hasPerformedInitialFit) {
+    flyToStudyArea(0.8)
+    hasPerformedInitialFit = true
+  }
   viewer.scene.requestRender()
 })
 

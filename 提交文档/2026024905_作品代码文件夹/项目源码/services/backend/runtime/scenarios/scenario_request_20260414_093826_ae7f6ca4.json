@@ -1,0 +1,22 @@
+{
+  "preset": "industrial_expansion",
+  "intensity": 5,
+  "node_ids": [
+    "92",
+    "93",
+    "116",
+    "117",
+    "141",
+    "142"
+  ],
+  "graph_propagation": {
+    "hops": 2,
+    "attenuation": 0.65,
+    "blend_mode": "sum"
+  },
+  "temporal_profile": {
+    "mode": "linear",
+    "start_weight": 0.35,
+    "end_weight": 1
+  }
+}

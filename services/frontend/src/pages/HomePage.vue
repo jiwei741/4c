@@ -203,35 +203,41 @@ onMounted(async () => {
 .quick-entry {
   display: grid;
   gap: 28px;
-  grid-template-columns: minmax(360px, 0.78fr) minmax(620px, 1.22fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
 }
 
 .hero {
-  padding: 34px 0 36px;
-  min-height: calc(100vh - 120px);
+  padding: 26px 0 24px;
+  min-height: auto;
+  align-items: stretch;
 }
 
 .hero__copy,
 .hero__preview-card,
 .quick-entry__stats,
 .overview-band {
-  padding: 28px;
+  padding: 22px;
 }
 
 .hero__copy {
   display: grid;
-  gap: 20px;
+  gap: 14px;
   align-self: stretch;
-  padding: 34px;
+  padding: 20px 18px;
+  min-height: 470px;
 }
 
 .hero__copy--assistant {
-  align-content: center;
+  align-content: start;
 }
 
 .hero :deep(.faq-assistant) {
-  margin-top: 4px;
+  margin-top: 0;
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+  min-height: 400px;
 }
 
 .hero__actions {
@@ -244,7 +250,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin-top: 18px;
+  margin-top: 6px;
   color: var(--text-muted);
   font-size: 13px;
 }
@@ -257,19 +263,22 @@ onMounted(async () => {
 
 .hero__stage {
   position: relative;
-  min-height: 700px;
+  min-height: 470px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
 }
 
 .hero__preview-card {
-  width: min(100%, 820px);
+  width: 100%;
+  max-width: none;
+  min-height: 470px;
+  height: 100%;
   position: relative;
   z-index: 2;
   display: grid;
-  gap: 16px;
-  padding: 24px;
+  gap: 14px;
+  padding: 22px;
 }
 
 .hero__panel-foot {
@@ -422,7 +431,7 @@ onMounted(async () => {
   }
 
   .hero__stage {
-    min-height: 520px;
+    min-height: 430px;
   }
 }
 
